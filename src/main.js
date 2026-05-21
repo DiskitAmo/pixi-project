@@ -29,15 +29,6 @@ function toggleMusic() {
   await app.init({ background: "#000", resizeTo: window });
   document.body.appendChild(app.canvas);
 
-  // autoplay
-  document.addEventListener(
-    "click",
-    () => {
-      bgMusic.play().catch(() => {});
-    },
-    { once: true },
-  );
-
   showLoader();
 })();
 
@@ -71,6 +62,9 @@ function showMenu() {
 async function showVideo() {
   clearScreen();
 
+  // Start BG music only when the user explicitly clicks START GAME
+  bgMusic.play().catch(() => {});
+
   //  PRELOAD next screen assets in background
   const preload = Assets.load([
     "/assets/loading-screen/background-img.webp",
@@ -102,11 +96,11 @@ async function flushGame() {
     return;
   }
 
-  const { container, triggerFlush } = result;
+  const { container, triggerFlush, triggerAutoplay } = result;
 
   mountUIOverlay(
     () => triggerFlush(),
-    () => {},
+    () => triggerAutoplay(),
     toggleMusic,
   );
 

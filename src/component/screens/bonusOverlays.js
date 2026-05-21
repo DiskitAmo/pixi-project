@@ -104,9 +104,9 @@ export function createBonusOverlays({ app, container }) {
     overlay.x = app.screen.width / 2;
     overlay.y = app.screen.height / 2;
 
-    // Fit within 80 % wide / 60 % tall while preserving aspect ratio
-    const maxW = app.screen.width * 0.8;
-    const maxH = app.screen.height * 0.6;
+    // Fit within 42 % wide / 36 % tall while preserving aspect ratio
+    const maxW = app.screen.width * 0.42;
+    const maxH = app.screen.height * 0.36;
     const ratio = overlay.texture.width / overlay.texture.height;
 
     if (maxW / ratio <= maxH) {
@@ -117,13 +117,14 @@ export function createBonusOverlays({ app, container }) {
       overlay.width = maxH * ratio;
     }
 
+    overlay.zIndex = 100; // always above sprites and sprinkle particles
     container.addChild(overlay);
 
     setTimeout(() => {
       if (overlay.parent) container.removeChild(overlay);
       overlay.destroy();
       onDone();
-    }, 3000);
+    }, 5000);
   }
 
   // Winner zoom overlay
@@ -149,6 +150,7 @@ export function createBonusOverlays({ app, container }) {
     winOverlay.y = cy;
     winOverlay.scale.set(0);
     winOverlay.alpha = 0;
+    winOverlay.zIndex = 100; // always above sprinkle particles
 
     // Dark circle with gold border
     const bg = new Graphics();

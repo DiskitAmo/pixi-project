@@ -22,8 +22,10 @@ import { BONUS_CONFIG } from "./bonusOverlays";
  * @param {import("@pixi/sound").sound}     ctx.sound
  * @param {Function}                        ctx.createSprinkleEffect
  * @param {Function}                        ctx.getParticleColor
- * @param {{ isLocked: boolean }}           ctx.lockState   - shared mutable lock flag
- * @param {() => { x: number, y: number }}  ctx.getCenter   - returns live center coords
+ * @param {{ isLocked: boolean }}           ctx.lockState        - shared mutable lock flag
+ * @param {() => { x: number, y: number }}  ctx.getCenter        - returns live center coords
+ * @param {(id: string) => void}           [ctx.onRoundComplete] - called after full cleanup
+ * @param {(id: string) => boolean}        [ctx.isAutoplayRound] - true when id is from autoplay
  * @returns {(round: object) => void}
  */
 export function createRoundStatusManager({
@@ -42,6 +44,8 @@ export function createRoundStatusManager({
   getParticleColor,
   lockState,
   getCenter,
+  onRoundComplete,
+  isAutoplayRound,
 }) {
   return function roundStatusManager(round) {
     const { x: centerX, y: centerY } = getCenter();
@@ -68,15 +72,30 @@ export function createRoundStatusManager({
         obj.isPeeBonus = true;
         obj.anchor.set(0.5, 1);
         obj.x = centerX;
-        obj.y = app.screen.height;
-        obj.width = app.screen.width * 0.55;
-        obj.height = app.screen.height * 0.65;
+        obj.y = app.screen.height + 40;
+        obj.width = app.screen.width * 0.35;
+        obj.height = app.screen.height * 1.15;
 
         let peeFrameIndex = 0;
         obj.peeFrameInterval = setInterval(() => {
           peeFrameIndex = (peeFrameIndex + 1) % frames.length;
           if (obj && !obj.destroyed) obj.texture = frames[peeFrameIndex];
-        }, 1500);
+        }, 400);
+
+        // Sweeping movement — horizontal only, y stays pinned to screen bottom
+        let peeMoveT = 0;
+        obj.peeMoveTicker = () => {
+          if (obj.destroyed) return;
+          const { x: cx } = getCenter();
+          peeMoveT += 0.018;
+
+          const swingX = Math.sin(peeMoveT * 0.9) * 90
+                       + Math.sin(peeMoveT * 2.1) * 22;
+          obj.x = cx + swingX;
+          obj.y = app.screen.height + 40;
+          obj.rotation = Math.sin(peeMoveT * 0.9) * 0.12;
+        };
+        app.ticker.add(obj.peeMoveTicker);
       } else {
         // NORMAL / BONUS (poo, phone, plunger): orbiting sprite
         obj = Sprite.from(round.texture);
@@ -132,11 +151,13 @@ export function createRoundStatusManager({
       if (!obj || obj.isBonusHandled) return;
       obj.isBonusHandled = true;
 
-      water.texture = defaultWaterTex;
-
       if (obj.peeFrameInterval) {
         clearInterval(obj.peeFrameInterval);
         obj.peeFrameInterval = null;
+      }
+      if (obj.peeMoveTicker) {
+        app.ticker.remove(obj.peeMoveTicker);
+        obj.peeMoveTicker = null;
       }
       obj.visible = false;
 
@@ -154,38 +175,48 @@ export function createRoundStatusManager({
 
       obj.rotation = 0;
 
-      if (round.bonusType !== "none") {
-        water.texture = defaultWaterTex;
-        stopBonusMusic();
-      }
-
       lockState.isLocked = true;
       multiplierUI.update(round.multiplier);
-      if (round.bonusType !== "none") {
+
+      // Show winner zoom only for bonus rounds, and never for concurrent autoplay rounds
+      const fromAutoplay = isAutoplayRound
+        ? isAutoplayRound(round.roundId)
+        : false;
+      if (round.bonusType !== "none" && !fromAutoplay) {
+        // Hide the multiplier circle so it doesn't show through the winner overlay
+        multiplierUI.container.visible = false;
         showWinnerZoom(round.multiplier, round.betAmount, centerX, centerY);
       }
 
       sound.stop("flushSound");
       sound.play("hitsound");
-      createSprinkleEffect(centerX, centerY, getParticleColor(round.multiplier));
+      createSprinkleEffect(
+        centerX,
+        centerY,
+        getParticleColor(round.multiplier),
+      );
 
       const finishedRoundId = round.roundId;
       setTimeout(() => {
         lockState.isLocked = false;
 
+        // Restore multiplier visibility and reset bonus water only after winner zoom is gone
+        multiplierUI.container.visible = true;
+        if (round.bonusType !== "none") {
+          water.texture = defaultWaterTex;
+          stopBonusMusic();
+        }
+
         container.removeChild(obj);
         activeSprites.delete(finishedRoundId);
         useFlushStore.getState().removeRound(finishedRoundId);
 
-        // Only stop bonus music when the bonus round itself finishes —
-        // an overlapping normal round must not cut off the bonus track.
-        if (round.bonusType !== "none") {
-          stopBonusMusic();
-        }
-
         if (pendingBonusForRound.has(finishedRoundId)) {
           pendingBonusForRound.delete(finishedRoundId);
         }
+
+        // Notify autoplay tracker that this round is fully done
+        if (onRoundComplete) onRoundComplete(finishedRoundId);
       }, 2000);
     }
   };

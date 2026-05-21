@@ -24,7 +24,7 @@ export function createMultiplierUI(centerX, centerY) {
   // Text
   const text = new Text("1.00x", {
     fontFamily: "Arial",
-    fontSize: 40,
+    fontSize: 32,
     fontWeight: "900",
     fill: COLORS.medium,
 
@@ -46,26 +46,34 @@ export function createMultiplierUI(centerX, centerY) {
     const color = getMultiplierColor(multiplierValue);
 
     text.text = `${multiplierValue.toFixed(2)}x`;
-
     text.style.fill = color;
-
     bg.clear();
-
     // border
     bg.lineStyle(4, color, 1);
-
     // fill
     bg.beginFill(0x1f2937, 0.75);
     bg.drawCircle(0, 0, 110);
     bg.endFill();
   }
 
-  // initial
-  update(1);
+  function showReady() {
+    text.text = "READY";
+    text.style.fill = "#6b7280";
+
+    bg.clear();
+    bg.lineStyle(4, 0x6b7280, 1);
+    bg.beginFill(0x1f2937, 0.6);
+    bg.drawCircle(0, 0, 110);
+    bg.endFill();
+  }
+
+  // Initial state — wait for first bet before spinning
+  showReady();
 
   return {
     container,
     update,
+    showReady,
     text,
     bg,
   };

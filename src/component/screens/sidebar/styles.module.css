@@ -41,11 +41,11 @@
 }
 
 .circleButton:hover {
-  border-color: green;
+  border-color: #0f0;
 }
 
 .circleButton:hover svg {
-  color: green;
+  color: #0f0;
 }
 
 /* Sidebar */
@@ -112,7 +112,7 @@
 
 .menuItem:hover {
   /* transform: scale(1.05); */
-  color: green;
+  color: #0f0;
 }
 
 .modalWrapper {

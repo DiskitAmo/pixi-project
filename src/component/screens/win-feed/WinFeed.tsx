@@ -14,6 +14,12 @@ function multiplierColorClass(val: number) {
   return "";
 }
 
+function pillBorderClass(val: number) {
+  if (val >= 25) return styles.borderHigh;
+  if (val >= 3) return styles.borderMedium;
+  return "";
+}
+
 export default function WinFeed() {
   const [wins, setWins] = useState<WinEntry[]>([]);
   const processedRef = useRef<Set<string>>(new Set());
@@ -50,7 +56,7 @@ export default function WinFeed() {
   return (
     <div className={styles.feed}>
       {wins.map((win) => (
-        <div key={win.id} className={styles.pill}>
+        <div key={win.id} className={`${styles.pill} ${pillBorderClass(win.multiplier)}`}>
           <span
             className={`${styles.multiplier} ${multiplierColorClass(win.multiplier)}`}
           >

@@ -23,6 +23,9 @@ import { resizeBackground } from "../utils/helper";
 
 export async function createFlushScreen(app, onVideoEnd) {
   const container = new Container();
+  // Allow zIndex-based sorting so announcement/winner overlays always
+  // render above sprinkle particles regardless of insertion order.
+  container.sortableChildren = true;
 
   let centerX = window.innerWidth / 2;
   let centerY = window.innerHeight / 2;
@@ -189,8 +192,8 @@ export async function createFlushScreen(app, onVideoEnd) {
   const logo = Sprite.from("/assets/logo/logo1.svg");
   logo.anchor.set(0.5);
   logo.x = window.innerWidth / 2;
-  logo.y = window.innerHeight / 2 - 250;
-  logo.scale.set(0.35);
+  logo.y = window.innerHeight / 2 - 580;
+  logo.scale.set(0.3);
   container.addChild(logo);
 
   // flush animation image
@@ -282,11 +285,15 @@ export async function createFlushScreen(app, onVideoEnd) {
   resizeScene();
   app.renderer.on("resize", resizeScene);
 
-  const { playBonusMusic, stopBonusMusic, showBonusAnnouncement, showWinnerZoom } =
-    createBonusOverlays({ app, container });
+  const {
+    playBonusMusic,
+    stopBonusMusic,
+    showBonusAnnouncement,
+    showWinnerZoom,
+  } = createBonusOverlays({ app, container });
 
   function triggerFlush() {
-    const roundId = Date.now().toString();
+    const roundId = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
     // Decide if this flush triggers a bonus
     flushCount++;
@@ -299,7 +306,7 @@ export async function createFlushScreen(app, onVideoEnd) {
     }
 
     if (bonusType) {
-      useFlushStore.getState().setAnnouncingBonus(true);
+      useFlushStore.getState().setAnnouncingBonus(true, bonusType);
       playBonusMusic(bonusType);
       const config = BONUS_CONFIG[bonusType];
 
@@ -341,6 +348,7 @@ export async function createFlushScreen(app, onVideoEnd) {
     }
 
     sound.play("flushSound");
+    return roundId;
   }
 
   const activeSprites = new Map();
@@ -372,8 +380,9 @@ export async function createFlushScreen(app, onVideoEnd) {
 
   app.ticker.add(() => {
     const now = performance.now();
+    const hasPlacedBet = useFlushStore.getState().hasPlacedFirstBet;
 
-    if (!lockState.isLocked && now - lastUpdate > 200) {
+    if (!lockState.isLocked && hasPlacedBet && now - lastUpdate > 200) {
       const randomValue = Math.random() * 50 + 1;
 
       multiplierUI.update(randomValue);
@@ -439,6 +448,60 @@ export async function createFlushScreen(app, onVideoEnd) {
     return 0xeab308;
   }
 
+  // ─── Autoplay tracker ────────────────────────────────────────────────────────
+  // Tracks which rounds belong to the current autoplay batch so we can detect
+  // when they all finish naturally (→ trigger end-bonus) vs being stopped.
+
+  let autoplayRoundIds = new Set();   // IDs still in flight
+  let autoplayPendingLaunches = 0;    // setTimeouts not yet fired
+
+  function checkAutoplayComplete() {
+    if (autoplayPendingLaunches > 0) return; // still staggering launches
+    if (autoplayRoundIds.size > 0) return;   // rounds still spiraling
+    if (!useFlushStore.getState().isAuto) return; // user pressed STOP
+
+    // All rounds finished naturally → trigger an end bonus then exit auto mode
+    triggerEndBonus();
+  }
+
+  function handleAutoplayRoundComplete(roundId) {
+    if (!autoplayRoundIds.has(roundId)) return;
+    autoplayRoundIds.delete(roundId);
+    checkAutoplayComplete();
+  }
+
+  function isAutoplayRound(roundId) {
+    return autoplayRoundIds.has(roundId);
+  }
+
+  function triggerEndBonus() {
+    useFlushStore.getState().stopAutoplay();
+    // Force the very next triggerFlush to pick a bonus
+    flushCount = nextBonusAt - 1;
+    triggerFlush();
+  }
+
+  function triggerAutoplay() {
+    const count = 3 + Math.floor(Math.random() * 5); // 3 – 7 objects
+    autoplayRoundIds = new Set();
+    autoplayPendingLaunches = count;
+
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        if (!useFlushStore.getState().isAuto) {
+          // Autoplay was stopped before this launch fired — just count it off
+          autoplayPendingLaunches--;
+          checkAutoplayComplete();
+          return;
+        }
+        const roundId = triggerFlush();
+        if (roundId) autoplayRoundIds.add(roundId);
+        autoplayPendingLaunches--;
+        checkAutoplayComplete();
+      }, i * 300);
+    }
+  }
+
   const roundStatusManager = createRoundStatusManager({
     app,
     container,
@@ -455,7 +518,9 @@ export async function createFlushScreen(app, onVideoEnd) {
     getParticleColor,
     lockState,
     getCenter: () => ({ x: centerX, y: centerY }),
+    onRoundComplete: handleAutoplayRoundComplete,
+    isAutoplayRound,
   });
 
-  return { container, triggerFlush };
+  return { container, triggerFlush, triggerAutoplay };
 }

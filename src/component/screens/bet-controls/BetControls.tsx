@@ -9,6 +9,7 @@ import {
   useFlushStore,
 } from "../../../store/useRoyalFlushStore";
 import AutoplayModal from "../autoplay-modal";
+import BonusBadge from "../bonus-badge/BonusBadge";
 
 //import { useGameStore, useMobileDetect } from '@wtfstudios/game-ui';
 
@@ -23,35 +24,36 @@ export default function BetControls({
   onBetClick,
   onAutoplayClick,
 }: BetControlsProps) {
-  const { betAmount, setBetAmount, isAuto, autoRemaining } = useFlushStore();
+  const { betAmount, setBetAmount, isAuto, autoRemaining, stopAutoplay } =
+    useFlushStore();
   // const balance = 0;
   // const isMobile = false;
 
-  const [showBetFeedback, setShowBetFeedback] = useState(false);
+  //const [showBetFeedback, setShowBetFeedback] = useState(false);
   const [showAutoplayModal, setShowAutoplayModal] = useState(false);
   const hideTimeoutRef = useRef<number | null>(null);
 
-  const FADE_DURATION = 12000;
+  //const FADE_DURATION = 12000;
 
-  const showBetAmountFeedback = () => {
-    // Clear any existing hide timeout
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = null;
-    }
+  // const showBetAmountFeedback = () => {
+  //   // Clear any existing hide timeout
+  //   if (hideTimeoutRef.current) {
+  //     clearTimeout(hideTimeoutRef.current);
+  //     hideTimeoutRef.current = null;
+  //   }
 
-    // Show feedback (restarts CSS animation if already visible)
-    setShowBetFeedback(false);
-    setTimeout(() => {
-      setShowBetFeedback(true);
+  //   // Show feedback (restarts CSS animation if already visible)
+  //   setShowBetFeedback(false);
+  //   setTimeout(() => {
+  //     setShowBetFeedback(true);
 
-      // Schedule hide after fade completes
-      hideTimeoutRef.current = window.setTimeout(() => {
-        setShowBetFeedback(false);
-        hideTimeoutRef.current = null;
-      }, FADE_DURATION);
-    }, 0);
-  };
+  //     // Schedule hide after fade completes
+  //     hideTimeoutRef.current = window.setTimeout(() => {
+  //       setShowBetFeedback(false);
+  //       hideTimeoutRef.current = null;
+  //     }, FADE_DURATION);
+  //   }, 0);
+  // };
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -66,19 +68,19 @@ export default function BetControls({
     setBetAmount(
       Math.max(GAME_SETTINGS.MIN_BET, betAmount - GAME_SETTINGS.BET_INCREMENT),
     );
-    showBetAmountFeedback();
+    // showBetAmountFeedback();
   };
 
   const incrementBet = () => {
     setBetAmount(
       Math.min(GAME_SETTINGS.MAX_BET, betAmount + GAME_SETTINGS.BET_INCREMENT),
     );
-    showBetAmountFeedback();
+    //showBetAmountFeedback();
   };
 
   const setMaxBet = () => {
     setBetAmount(GAME_SETTINGS.MAX_BET);
-    showBetAmountFeedback();
+    //showBetAmountFeedback();
   };
 
   const canBet = useFlushStore(selectCanPlaceBet);
@@ -97,6 +99,9 @@ export default function BetControls({
         </button>
 
         <div className={styles.betContainer}>
+          {/* Overlays the main button during bonus announcements */}
+          <BonusBadge />
+
           <div className={styles.mainButtonOuter}>
             <div
               className={`${styles.mainButtonWrapper} ${
@@ -104,14 +109,16 @@ export default function BetControls({
               }`}
             >
               <button
-                onClick={() => onBetClick(betAmount)}
+                onClick={() =>
+                  isAuto ? stopAutoplay() : onBetClick(betAmount)
+                }
                 disabled={disabled}
                 className={`${styles.mainButton} ${isAuto ? styles.mainButtonAuto : ""}`}
               >
                 <span> {isAuto ? "Stop" : ""}</span>
                 <span> {isAuto ? autoRemaining : ""}</span>
 
-                {showBetFeedback && !isAuto && (
+                {!isAuto && (
                   <div className={styles.betAmountFeedback}>
                     ${betAmount.toFixed(2)}
                   </div>

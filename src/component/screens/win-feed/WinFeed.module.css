@@ -12,12 +12,20 @@
   gap: 0.6rem;
   padding: 0.45rem 0.9rem;
   background: rgba(18, 0, 36, 0.88);
-  border: 2px solid #9333ea;
+  border: 2px solid #c026d3;
   border-radius: 8px;
-  min-width: 10rem;
+  min-width: 6rem;
   animation:
     slideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     fadeOut 0.4s 3.1s ease forwards;
+}
+
+.pill.borderMedium {
+  border-color: #3b82f6;
+}
+
+.pill.borderHigh {
+  border-color: #eab308;
 }
 
 .multiplier {

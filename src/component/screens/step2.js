@@ -30,7 +30,7 @@ export function createMenuScreen(app, onStart) {
   // Button Text
   const style = new TextStyle({
     fill: "#000",
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "bold",
   });
   const text = new Text("START GAME", style);
@@ -69,7 +69,6 @@ export function createMenuScreen(app, onStart) {
     }
 
     const s = btn.scale.x + (targetScale - btn.scale.x) * lerpSpeed;
-
     btn.scale.set(s);
   };
 

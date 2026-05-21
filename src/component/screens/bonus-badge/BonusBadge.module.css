@@ -1,0 +1,50 @@
+/* Sits inside betContainer (position:relative) and covers the 118px main button */
+.wrapper {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 118px;
+  height: 118px;
+  z-index: 10;
+  pointer-events: none;
+  /* transform & opacity are driven by inline styles so translateX(-50%)
+     is always present and never dropped mid-animation              */
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Pulsing glow ring behind the image */
+.ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 3px solid #c026d3;
+  box-shadow:
+    0 0 12px 4px rgba(192, 38, 211, 0.7),
+    0 0 28px 8px rgba(147, 51, 234, 0.45);
+  animation: pulse 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+  display: block;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 12px 4px rgba(192, 38, 211, 0.7),
+      0 0 28px 8px rgba(147, 51, 234, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 20px 8px rgba(192, 38, 211, 0.95),
+      0 0 44px 14px rgba(147, 51, 234, 0.65);
+  }
+}

@@ -45,11 +45,12 @@ interface FlushState {
   maxAutoPlays: number;
 
   announcingBonus: boolean;
+  announcingBonusType: FlushBonusType | null;
 
   setRisk: (risk: RiskLevel) => void;
   setBetAmount: (amount: number) => void;
   setMultiplierTables: (tables: Partial<Record<RiskLevel, number[]>>) => void;
-  setAnnouncingBonus: (val: boolean) => void;
+  setAnnouncingBonus: (val: boolean, bonusType?: FlushBonusType | null) => void;
 
   addRound: (roundId: string, betAmount: number, texture: Texture) => void;
 
@@ -88,6 +89,7 @@ export const useFlushStore = create<FlushState>((set) => ({
   maxAutoPlays: 100,
 
   announcingBonus: false,
+  announcingBonusType: null,
 
   /* ================================
      Core
@@ -99,7 +101,8 @@ export const useFlushStore = create<FlushState>((set) => ({
 
   setMultiplierTables: (tables) => set({ multiplierTables: tables }),
 
-  setAnnouncingBonus: (val) => set({ announcingBonus: val }),
+  setAnnouncingBonus: (val, bonusType = null) =>
+    set({ announcingBonus: val, announcingBonusType: val ? bonusType : null }),
 
   /* ================================
      Round Lifecycle
