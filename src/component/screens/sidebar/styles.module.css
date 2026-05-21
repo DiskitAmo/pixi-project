@@ -1,0 +1,196 @@
+/* SidebarUI.module.css */
+
+.sidebarWrapper {
+  /* position: absolute;
+  inset: 0; */
+  z-index: 70;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.active {
+  z-index: 1000;
+  background: rgb(10, 10, 10, 0.8);
+}
+
+/* Floating Buttons */
+.floatingButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: max-content;
+  padding: 20px;
+}
+
+/* Shared Circular Button */
+.circleButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.circleButton:hover {
+  border-color: green;
+}
+
+.circleButton:hover svg {
+  color: green;
+}
+
+/* Sidebar */
+.sidebar {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  width: max-content;
+  background: rgba(8, 16, 18, 0.96);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.45);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  border-radius: 0 8px 8px 0;
+  z-index: 30;
+}
+
+.sidebarOpen {
+  transform: translateX(0);
+}
+
+/* Close button area */
+.closeContainer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+  background: rgba(8, 16, 18, 0.96);
+  border-radius: 0 8px 0 0;
+}
+
+/* Menu Items */
+.menuItems {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: rgba(8, 16, 18, 0.96);
+  border-radius: 0 0 8px 0;
+  padding-bottom: 16px;
+}
+
+/* Single Item */
+.menuItem {
+  background: transparent;
+  border: none;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.menuItem svg {
+  width: 24px;
+  height: 22px;
+}
+
+.menuItem span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.menuItem:hover {
+  /* transform: scale(1.05); */
+  color: green;
+}
+
+.modalWrapper {
+  /* position: absolute;
+  inset: 0; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  z-index: 60;
+}
+
+/* Modal Box */
+.modal {
+  position: relative;
+  width: 477px;
+  max-width: 90%;
+  max-height: 451px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+  padding: 24px 20px;
+  color: white;
+  /* display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px; */
+}
+
+/* Custom Scrollbar */
+.modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+}
+
+/* Close Button */
+.modalClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Title */
+.modalTitle {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+/* Section Titles */
+.sectionTitle {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+/* Paragraph */
+.modalText {
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0 0 16px 0;
+}
