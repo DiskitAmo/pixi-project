@@ -58,6 +58,9 @@ async function showVideo() {
 async function flushGame() {
   clearScreen();
 
+  // Show game bg immediately so there's no black flash while assets load
+  useFlushStore.getState().setGamePhase("loading");
+
   const result = await createFlushScreen(app);
 
   if (!result) {

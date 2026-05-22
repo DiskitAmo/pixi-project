@@ -31,7 +31,7 @@ export interface FlushRound {
   winAmount: number;
 }
 
-export type GamePhase = "loader" | "video" | "game";
+export type GamePhase = "loader" | "video" | "loading" | "game";
 
 export interface PixiActions {
   triggerFlush: () => void;

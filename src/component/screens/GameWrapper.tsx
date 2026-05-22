@@ -1,6 +1,7 @@
 import { useFlushStore } from "../../store/useRoyalFlushStore";
 import LoaderScreen from "./loadingScreen/LoaderScreen";
 import GameControls from "./gameControls/gameControl";
+import GameLoadingScreen from "./GameLoadingScreen";
 
 interface GameWrapperProps {
   onStart: () => void;
@@ -28,6 +29,11 @@ export default function GameWrapper({ onStart }: GameWrapperProps) {
         onToggleMute={() => pixiActions.toggleMusic()}
       />
     );
+  }
+
+  // "loading" phase — assets loading, show bg to avoid black flash
+  if (gamePhase === "loading") {
+    return <GameLoadingScreen />;
   }
 
   // "video" phase — Pixi handles the screen, React shows nothing
