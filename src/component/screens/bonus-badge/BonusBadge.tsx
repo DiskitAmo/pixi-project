@@ -20,8 +20,7 @@ export default function BonusBadge() {
 
   // Derive the type to display — announcement phase takes priority,
   // then fall back to whatever the active bonus round says
-  const activeType =
-    announcingBonusType ?? activeBonusRound?.bonusType ?? null;
+  const activeType = announcingBonusType ?? activeBonusRound?.bonusType ?? null;
 
   // Visible during the announcement AND for the full bonus round lifetime
   const visible =

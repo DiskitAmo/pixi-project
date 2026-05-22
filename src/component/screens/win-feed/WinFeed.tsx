@@ -56,7 +56,10 @@ export default function WinFeed() {
   return (
     <div className={styles.feed}>
       {wins.map((win) => (
-        <div key={win.id} className={`${styles.pill} ${pillBorderClass(win.multiplier)}`}>
+        <div
+          key={win.id}
+          className={`${styles.pill} ${pillBorderClass(win.multiplier)}`}
+        >
           <span
             className={`${styles.multiplier} ${multiplierColorClass(win.multiplier)}`}
           >

@@ -211,6 +211,7 @@ export async function createFlushScreen(app, onVideoEnd) {
 
   sound.add("flushSound", "/sounds/toilet-flush.mp3");
   sound.add("hitsound", "/sounds/hit-sound.mp3");
+  sound.add("winSound", "/sounds/win-sound.mp3");
   sound.add("peeBg", "/sounds/pee-background.mp3");
   sound.add("pooBg", "/sounds/poo-background.mp3");
   sound.add("phoneBg", "/sounds/phone-ringtone.mp3");
@@ -292,13 +293,13 @@ export async function createFlushScreen(app, onVideoEnd) {
     showWinnerZoom,
   } = createBonusOverlays({ app, container });
 
-  function triggerFlush() {
+  function triggerFlush(isAutoplay = false) {
     const roundId = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
-    // Decide if this flush triggers a bonus
+    // Decide if this flush triggers a bonus (autoplay rounds are always normal flushes)
     flushCount++;
     let bonusType = null;
-    if (flushCount >= nextBonusAt) {
+    if (!isAutoplay && flushCount >= nextBonusAt) {
       bonusType = BONUS_TYPES[Math.floor(Math.random() * BONUS_TYPES.length)];
       pendingBonusForRound.set(roundId, bonusType);
       flushCount = 0;
@@ -306,15 +307,11 @@ export async function createFlushScreen(app, onVideoEnd) {
     }
 
     if (bonusType) {
-      useFlushStore.getState().setAnnouncingBonus(true, bonusType);
-      playBonusMusic(bonusType);
       const config = BONUS_CONFIG[bonusType];
 
       // Bonus object spirals instead of a random item
-      // flushOverlay.texture = Assets?.get(config.object);
       if (bonusType === "pee") {
         flushOverlay.texture = Assets.get(config.objectFrames[0]);
-        //sound.play("peeBg");
       } else {
         flushOverlay.texture = Assets.get(config.object);
       }
@@ -330,13 +327,15 @@ export async function createFlushScreen(app, onVideoEnd) {
       const bonusWater = Assets.get(config.water);
       if (bonusWater) water.texture = bonusWater;
 
-      // Hold spiral start until announcement finishes
+      // Show announcement banner + badge, hold spiral until banner finishes
+      useFlushStore.getState().setAnnouncingBonus(true, bonusType);
+      playBonusMusic(bonusType);
       delayedRounds.add(roundId);
       showBonusAnnouncement(bonusType, () => {
         delayedRounds.delete(roundId);
       });
     } else {
-      // Normal flush with a random object
+      // Normal flush with a random object (always used for autoplay rounds)
       flushOverlay.texture = Assets.get(getRandomFlushObject());
       useFlushStore
         .getState()
@@ -494,7 +493,7 @@ export async function createFlushScreen(app, onVideoEnd) {
           checkAutoplayComplete();
           return;
         }
-        const roundId = triggerFlush();
+        const roundId = triggerFlush(true);
         if (roundId) autoplayRoundIds.add(roundId);
         autoplayPendingLaunches--;
         checkAutoplayComplete();

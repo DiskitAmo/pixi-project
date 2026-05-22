@@ -186,6 +186,7 @@ export function createRoundStatusManager({
         // Hide the multiplier circle so it doesn't show through the winner overlay
         multiplierUI.container.visible = false;
         showWinnerZoom(round.multiplier, round.betAmount, centerX, centerY);
+        sound.play("winSound", { volume: 0.8, singleInstance: true });
       }
 
       sound.stop("flushSound");
