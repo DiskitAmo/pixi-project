@@ -1,13 +1,12 @@
 /* SidebarUI.module.css */
 
 .sidebarWrapper {
-  /* position: absolute;
-  inset: 0; */
-  z-index: 70;
+  z-index: 100;
   position: relative;
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  pointer-events: auto;
 }
 
 .active {

@@ -42,29 +42,47 @@ export function createMultiplierUI(centerX, centerY) {
   container.x = centerX;
   container.y = centerY;
 
-  function update(multiplierValue) {
-    const color = getMultiplierColor(multiplierValue);
+  // Tracks current size so update/showReady always redraw at the right radius
+  let radius = 110;
+  let isReadyState = true;
+  let lastMultiplier = 1;
 
+  function update(multiplierValue) {
+    isReadyState = false;
+    lastMultiplier = multiplierValue;
+
+    const color = getMultiplierColor(multiplierValue);
     text.text = `${multiplierValue.toFixed(2)}x`;
     text.style.fill = color;
+
     bg.clear();
-    // border
     bg.lineStyle(4, color, 1);
-    // fill
     bg.beginFill(0x1f2937, 0.75);
-    bg.drawCircle(0, 0, 110);
+    bg.drawCircle(0, 0, radius);
     bg.endFill();
   }
 
   function showReady() {
+    isReadyState = true;
     text.text = "READY";
     text.style.fill = "#6b7280";
 
     bg.clear();
     bg.lineStyle(4, 0x6b7280, 1);
     bg.beginFill(0x1f2937, 0.6);
-    bg.drawCircle(0, 0, 110);
+    bg.drawCircle(0, 0, radius);
     bg.endFill();
+  }
+
+  function resize(isMobile) {
+    radius = isMobile ? 65 : 110;
+    text.style.fontSize = isMobile ? 20 : 32;
+    // Redraw at new size keeping current visual state
+    if (isReadyState) {
+      showReady();
+    } else {
+      update(lastMultiplier);
+    }
   }
 
   // Initial state — wait for first bet before spinning
@@ -74,6 +92,7 @@ export function createMultiplierUI(centerX, centerY) {
     container,
     update,
     showReady,
+    resize,
     text,
     bg,
   };

@@ -16,7 +16,6 @@ export const riskColors: Record<string, string> = {
 };
 
 export default function GameControls() {
-  const { betAmount } = useFlushStore();
   const [riskIndex, setRiskIndex] = useState(2); // default HIGH
 
   const canBet = useFlushStore(selectCanPlaceBet);
@@ -31,7 +30,7 @@ export default function GameControls() {
   return (
     <div className={styles.wrapper}>
       <div
-        className={`${styles.riskBox} ${disabled ? styles.riskBoxDisabled : ""}`}
+        className={`${styles.riskBoxWrapper} ${disabled ? styles.riskBoxDisabled : ""}`}
         style={{ borderColor: color, color }}
       >
         <button
@@ -41,9 +40,11 @@ export default function GameControls() {
         >
           <ChevronLeft />
         </button>
-        <div className={styles.riskBoxhh}>
-          <div>RISK</div>
-          <strong>{risks[riskIndex]}</strong>
+        <div className={styles.riskBox}>
+          <div className={styles.riskLabel}>RISK</div>
+          <p className={styles.riskValue} style={{ color }}>
+            {risks[riskIndex]}
+          </p>
         </div>
         <button
           className={styles.riskBtn}
@@ -52,14 +53,6 @@ export default function GameControls() {
         >
           <ChevronRight />
         </button>
-      </div>
-      <div className={styles.details}>
-        <p>
-          <span className={styles.riskSpan}>BET</span>${betAmount.toFixed(2)}
-        </p>
-        <p>
-          <span className={styles.riskSpan}>CREDIT</span>$2000.00
-        </p>
       </div>
     </div>
   );

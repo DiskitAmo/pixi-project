@@ -89,7 +89,7 @@ export default function BetControls({
 
   return (
     <>
-      <div className={styles.container}>
+      <div className={styles.betWrapper}>
         <button
           disabled={disabled}
           onClick={decrementBet}

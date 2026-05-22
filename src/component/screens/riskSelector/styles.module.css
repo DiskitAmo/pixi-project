@@ -1,4 +1,4 @@
-.riskBox {
+.riskBoxWrapper {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8,6 +8,15 @@
   border-radius: 10px;
   text-align: center;
   min-width: 88px;
+}
+
+.riskLabel {
+  font-size: 10px;
+  color: #fff;
+}
+
+.riskValue {
+  font-size: 16px;
 }
 
 .riskBtn {
@@ -54,14 +63,13 @@
   margin: 0;
 }
 
-.details {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 4px;
-}
-
-.riskSpan {
-  margin-right: 8px;
-  color: #0f0;
+@media (max-width: 768px) {
+  .wrapper {
+    order: 2;
+    transform: scale(0.8);
+  }
+  .riskBoxWrapper {
+    min-width: unset;
+    width: max-content;
+  }
 }

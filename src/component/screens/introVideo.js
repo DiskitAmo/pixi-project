@@ -3,17 +3,20 @@ import { Container, Sprite, Assets } from "pixi.js";
 export async function createVideoScreen(app, onVideoEnd) {
   const container = new Container();
 
-  //  Pixi v8 correct way to load video
-  const texture = await Assets.load({
-    src: "/assets/intro.mp4",
-    loadParser: "loadVideo",
-    data: {
-      muted: true,
-      playsinline: true,
-      autoPlay: false,
-      loop: false,
-    },
-  });
+  //  Pixi v8 correct way to load video + preload logo in parallel
+  const [texture] = await Promise.all([
+    Assets.load({
+      src: "/assets/intro.mp4",
+      loadParser: "loadVideo",
+      data: {
+        muted: true,
+        playsinline: true,
+        autoPlay: false,
+        loop: false,
+      },
+    }),
+    Assets.load("/assets/logo/logo1.svg"),
+  ]);
 
   if (!texture) {
     console.error(
@@ -65,9 +68,9 @@ export async function createVideoScreen(app, onVideoEnd) {
   // Logo
   const logo = Sprite.from("/assets/logo/logo1.svg");
   logo.anchor.set(0.5);
-  logo.scale.set(0.7);
+  logo.scale.set(0.6);
   logo.x = app.screen.width / 2;
-  logo.y = app.screen.height / 2;
+  logo.y = app.screen.height / 2 - 80;
   container.addChild(logo);
 
   // video.addEventListener("loadeddata", () => {

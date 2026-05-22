@@ -1,4 +1,4 @@
-.container {
+.betWrapper {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -58,8 +58,8 @@
   font-weight: 600;
   line-height: 100%;
   position: absolute;
-  right: 8px;
-  top: 13px;
+  right: 5px;
+  top: 16px;
   text-transform: uppercase;
   transition:
     border-color 0.2s ease,
@@ -323,11 +323,14 @@
   width: 112px;
 }
 
-
 @media (max-width: 767px) {
   .maxButton {
     top: 15px;
     right: unset;
     left: 24px;
+  }
+  .betWrapper {
+    padding-right: 0;
+    transform: scale(0.8);
   }
 }

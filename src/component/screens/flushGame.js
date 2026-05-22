@@ -38,7 +38,6 @@ export async function createFlushScreen(app, onVideoEnd) {
       "/assets/loading-screen/background-img.webp",
       "/assets/flush/toilet-seat.png",
       "/assets/flush/water.png",
-      "/assets/logo/logo1.svg",
       "/sounds/toilet-flush.mp3",
       "/sounds/hit-sound.mp3",
       "/sounds/pee-background.mp3",
@@ -136,8 +135,8 @@ export async function createFlushScreen(app, onVideoEnd) {
 
   app.ticker.add(() => {
     vortexAngle += 0.03;
-    centerX = window.innerWidth / 2;
-    centerY = window.innerHeight / 2;
+    // centerX / centerY are set by resizeWater() — do NOT override here
+    // so mobile offset (seat-aligned Y) is preserved every frame
 
     // ===== BOWL MASK (MAIN CLIP) =====
     bowlMask.clear();
@@ -166,8 +165,8 @@ export async function createFlushScreen(app, onVideoEnd) {
 
   const seat = Sprite.from("/assets/flush/toilet-seat.png");
   seat.anchor.set(0.5);
-  seat.x = window.innerWidth / 2;
-  seat.y = window.innerHeight / 2;
+  seat.x = app.screen.width / 2;
+  seat.y = app.screen.height / 2;
   // seat.x = app.screen.width;
   //seat.y = app.screen.height;
   container.addChild(seat);
@@ -188,19 +187,11 @@ export async function createFlushScreen(app, onVideoEnd) {
     bowlMask.endFill();
   }
 
-  //logo
-  const logo = Sprite.from("/assets/logo/logo1.svg");
-  logo.anchor.set(0.5);
-  logo.x = window.innerWidth / 2;
-  logo.y = window.innerHeight / 2 - 580;
-  logo.scale.set(0.3);
-  container.addChild(logo);
-
   // flush animation image
   const flushOverlay = new Sprite();
   flushOverlay.anchor.set(0.5);
-  flushOverlay.x = window.innerWidth / 2;
-  flushOverlay.y = window.innerHeight / 2;
+  flushOverlay.x = app.screen.width / 2;
+  flushOverlay.y = app.screen.height / 2;
 
   flushOverlay.visible = false; // initially hidden
   container.addChild(flushOverlay);
@@ -219,42 +210,39 @@ export async function createFlushScreen(app, onVideoEnd) {
 
   function resizeSeat() {
     if (!seat) return;
-    const cw = app.screen.width;
-    const ch = app.screen.height;
+    const canvasW = app.screen.width;
+    const canvasH = app.screen.height;
     const imgRatio = seat.texture.width / seat.texture.height;
 
-    let h;
-    let w;
+    let renderHeight;
+    let renderWidth;
     const isMobile = app.screen.width < 768;
     if (isMobile) {
-      h = ch * 0.6;
-      w = h * imgRatio;
+      renderHeight = canvasH * 0.6;
+      renderWidth = renderHeight * imgRatio;
     } else {
-      h = ch;
-      w = h * imgRatio;
+      renderHeight = canvasH;
+      renderWidth = renderHeight * imgRatio;
     }
 
-    seat.width = w;
-    seat.height = h;
-    seat.x = cw / 2;
-    //seat.y = ch / 2;
-    seat.y = isMobile ? h / 2 : ch / 2;
+    seat.width = renderWidth;
+    seat.height = renderHeight;
+    seat.x = canvasW / 2;
+    //seat.y = canvasH / 2;
+    seat.y = isMobile ? renderHeight / 2 : canvasH / 2;
   }
 
   function resizeWater() {
-    const cw = app.screen.width;
-    const ch = app.screen.height;
-    centerX = cw / 2;
-    //centerY = ch / 2;
+    const canvasW = app.screen.width;
+    const canvasH = app.screen.height;
+    const isMobile = canvasW < 768;
 
-    const isMobile = app.screen.width < 768;
+    centerX = canvasW / 2;
+    // align water centre with the seat centre so it always sits inside the bowl
+    centerY = seat.y;
 
-    if (isMobile) {
-      maxRadius = ch * 0.3;
-    } else {
-      maxRadius = Math.min(cw, ch) * 0.52;
-    }
-    centerY = ch / 2;
+    maxRadius = isMobile ? canvasH * 0.3 : Math.min(canvasW, canvasH) * 0.52;
+
     water.width = maxRadius * 2;
     water.height = maxRadius * 2;
     water.x = centerX;
@@ -263,24 +251,14 @@ export async function createFlushScreen(app, onVideoEnd) {
 
   function resizeScene() {
     resizeBackground(app, bg);
-    resizeSeat();
-    resizeWater();
+    resizeSeat(); // sets seat.y — must run before resizeWater
+    resizeWater(); // uses seat.y for centerY
 
-    // logo.x = app.screen.width / 2;
-    // logo.y = app.screen.height / 2 - seat.height * 0.32;
-
-    // multiplierUI.container.x = app.screen.width / 2;
-    // multiplierUI.container.y = app.screen.height / 2;
     const isMobile = app.screen.width < 768;
-    const anchorY = isMobile
-      ? (app.screen.height / 2) * 0.6
-      : app.screen.height / 2;
-
-    logo.x = app.screen.width / 2;
-    logo.y = anchorY - seat.height * 0.32;
 
     multiplierUI.container.x = app.screen.width / 2;
-    multiplierUI.container.y = anchorY;
+    multiplierUI.container.y = seat.y;
+    multiplierUI.resize(isMobile);
   }
 
   resizeScene();
@@ -451,12 +429,12 @@ export async function createFlushScreen(app, onVideoEnd) {
   // Tracks which rounds belong to the current autoplay batch so we can detect
   // when they all finish naturally (→ trigger end-bonus) vs being stopped.
 
-  let autoplayRoundIds = new Set();   // IDs still in flight
-  let autoplayPendingLaunches = 0;    // setTimeouts not yet fired
+  let autoplayRoundIds = new Set(); // IDs still in flight
+  let autoplayPendingLaunches = 0; // setTimeouts not yet fired
 
   function checkAutoplayComplete() {
     if (autoplayPendingLaunches > 0) return; // still staggering launches
-    if (autoplayRoundIds.size > 0) return;   // rounds still spiraling
+    if (autoplayRoundIds.size > 0) return; // rounds still spiraling
     if (!useFlushStore.getState().isAuto) return; // user pressed STOP
 
     // All rounds finished naturally → trigger an end bonus then exit auto mode

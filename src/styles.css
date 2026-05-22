@@ -35,11 +35,23 @@ body {
   margin: 0;
   overflow: hidden;
   font-family: "ClashDisplay", sans-serif;
+  background: #000;
 }
 
-#ui-overlay {
+#app {
   position: fixed;
   inset: 0;
-  pointer-events: none;
+}
+
+#pixi-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+#react-root {
+  position: absolute;
+  inset: 0;
   z-index: 10;
+  pointer-events: none;
 }

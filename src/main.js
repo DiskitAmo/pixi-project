@@ -1,9 +1,8 @@
 import { Application, Assets } from "pixi.js";
-import { createLoaderScreen } from "./component/screens/loaderScreen.js";
-import { createMenuScreen } from "./component/screens/step2.js";
 import { createVideoScreen } from "./component/screens/introVideo.js";
 import { createFlushScreen } from "./component/screens/flushGame.js";
-import { mountUIOverlay, unmountUIOverlay } from "./mountOverlay.ts";
+import { mountApp } from "./App.tsx";
+import { useFlushStore } from "./store/useRoyalFlushStore.ts";
 
 import { initDevtools } from "@pixi/devtools";
 
@@ -11,12 +10,10 @@ const app = new Application();
 initDevtools(app);
 let currentScreen;
 
-// BG MUSIC
 const bgMusic = new Audio("/sounds/casino-royale.mp3");
 bgMusic.loop = true;
 bgMusic.volume = 0.1;
 
-// TOGGLE FUNCTION
 function toggleMusic() {
   if (bgMusic.paused) {
     bgMusic.play();
@@ -27,9 +24,9 @@ function toggleMusic() {
 
 (async () => {
   await app.init({ background: "#000", resizeTo: window });
-  document.body.appendChild(app.canvas);
+  document.getElementById("pixi-canvas").appendChild(app.canvas);
 
-  showLoader();
+  mountApp(() => showVideo());
 })();
 
 function clearScreen() {
@@ -39,33 +36,10 @@ function clearScreen() {
   }
 }
 
-function showLoader() {
-  clearScreen();
-
-  currentScreen = createLoaderScreen(app, () => {
-    showMenu();
-  });
-
-  app.stage.addChild(currentScreen);
-}
-
-function showMenu() {
-  clearScreen();
-
-  currentScreen = createMenuScreen(app, () => {
-    showVideo();
-  });
-
-  app.stage.addChild(currentScreen);
-}
-
 async function showVideo() {
-  clearScreen();
-
   // Start BG music only when the user explicitly clicks START GAME
   bgMusic.play().catch(() => {});
 
-  //  PRELOAD next screen assets in background
   const preload = Assets.load([
     "/assets/loading-screen/background-img.webp",
     "/assets/flush/toilet-seat.png",
@@ -74,11 +48,7 @@ async function showVideo() {
   ]);
 
   currentScreen = await createVideoScreen(app, async () => {
-    // wait for preload
     await preload;
-
-    // <FlushGame />;
-    // mountFlushGame();
     flushGame();
   });
 
@@ -87,7 +57,6 @@ async function showVideo() {
 
 async function flushGame() {
   clearScreen();
-  unmountUIOverlay();
 
   const result = await createFlushScreen(app);
 
@@ -98,11 +67,15 @@ async function flushGame() {
 
   const { container, triggerFlush, triggerAutoplay } = result;
 
-  mountUIOverlay(
-    () => triggerFlush(),
-    () => triggerAutoplay(),
+  // Register Pixi callbacks in the store — GameWrapper picks them up reactively
+  useFlushStore.getState().setPixiActions({
+    triggerFlush: () => triggerFlush(),
+    triggerAutoplay: () => triggerAutoplay(),
     toggleMusic,
-  );
+  });
+
+  // Signal React that the game is ready — UIOverlay will now render
+  useFlushStore.getState().setGamePhase("game");
 
   currentScreen = container;
   app.stage.addChild(currentScreen);

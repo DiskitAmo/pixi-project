@@ -31,7 +31,20 @@ export interface FlushRound {
   winAmount: number;
 }
 
+export type GamePhase = "loader" | "video" | "game";
+
+export interface PixiActions {
+  triggerFlush: () => void;
+  triggerAutoplay: () => void;
+  toggleMusic: () => void;
+}
+
 interface FlushState {
+  gamePhase: GamePhase;
+  pixiActions: PixiActions | null;
+  setGamePhase: (phase: GamePhase) => void;
+  setPixiActions: (actions: PixiActions) => void;
+
   currentRisk: RiskLevel;
   betAmount: number;
 
@@ -76,6 +89,11 @@ interface FlushState {
 ================================ */
 
 export const useFlushStore = create<FlushState>((set) => ({
+  gamePhase: "loader",
+  pixiActions: null,
+  setGamePhase: (phase) => set({ gamePhase: phase }),
+  setPixiActions: (actions) => set({ pixiActions: actions }),
+
   currentRisk: "low",
   betAmount: 1,
 
