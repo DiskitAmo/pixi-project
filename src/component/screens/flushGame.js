@@ -20,6 +20,7 @@ import {
   createBonusOverlays,
 } from "./bonusOverlays";
 import { resizeBackground } from "../utils/helper";
+import { ASSETS, SOUNDS, FLUSHING_ITEM_SOURCES } from "../../lib/constants";
 
 export async function createFlushScreen(app, onVideoEnd) {
   const container = new Container();
@@ -27,81 +28,23 @@ export async function createFlushScreen(app, onVideoEnd) {
   // render above sprinkle particles regardless of insertion order.
   container.sortableChildren = true;
 
+  // Dedicated container for React-hook-driven particle effects (pee stream, etc.)
+  // Sits above game objects but below the seat/UI overlays.
+  const particlesContainer = new Container();
+  particlesContainer.zIndex = 50;
+  container.addChild(particlesContainer);
+
   let centerX = window.innerWidth / 2;
   let centerY = window.innerHeight / 2;
   let maxRadius = Math.min(window.innerWidth, window.innerHeight) * 0.48;
   let isMobile = window.innerWidth < 768;
   // console.log("Is mobile:", isMobile);
-  //  Preload ALL assets first before creating any sprites
-  async function preloadAssets() {
-    await Assets.load([
-      "/assets/loading-screen/background-img.webp",
-      "/assets/flush/toilet-seat.png",
-      "/assets/flush/water.png",
-      "/sounds/toilet-flush.mp3",
-      "/sounds/hit-sound.mp3",
-      "/sounds/pee-background.mp3",
-      "/sounds/poo-background.mp3",
-      "/sounds/phone-ringtone.mp3",
-      "/sounds/plunger-background.mp3",
-      "/assets/flushable-object/bonnie.png",
-      "/assets/flushable-object/bottle.png",
-      "/assets/flushable-object/rugby-kiwi.png",
-      "/assets/flushable-object/meat-pie.png",
-      "/assets/flushable-object/hockey-puck.png",
-      "/assets/flushable-object/tim-hortons-coffee.png",
-      "/assets/flushable-object/ramen-bowl.png",
-      "/assets/flushable-object/surstromming.png",
-      "/assets/flushable-object/burrito.png",
-      "/assets/flushable-object/ciggie.png",
-      "/assets/flushable-object/fish.png",
-      "/assets/flushable-object/hamster.png",
-      "/assets/flushable-object/hulk.png",
-      "/assets/flushable-object/pedo.png",
-      "/assets/flushable-object/trump.png",
-      "/assets/pee/weee-bonus.webp",
-      "/assets/pee/pee-stream-1.png",
-      "/assets/pee/pee-stream-2.png",
-      "/assets/pee/pee-stream-3.png",
-      "/assets/pee/water-yellow.png",
-      "/assets/poo/turd-time.webp",
-      "/assets/poo/poo.png",
-      "/assets/poo/water-green.png",
-      "/assets/phone/booty-call.webp",
-      "/assets/phone/phone.webp",
-      "/assets/phone/purple-water.webp",
-      "/assets/plunger/plunger-rush.webp",
-      "/assets/plunger/plunger.png",
-      "/assets/plunger/orange-water.webp",
-    ]);
-  }
-
-  const flushableObjects = [
-    "/assets/flushable-object/bonnie.png",
-    "/assets/flushable-object/bottle.png",
-    "/assets/flushable-object/rugby-kiwi.png",
-    "/assets/flushable-object/meat-pie.png",
-    "/assets/flushable-object/hockey-puck.png",
-    "/assets/flushable-object/tim-hortons-coffee.png",
-    "/assets/flushable-object/ramen-bowl.png",
-    "/assets/flushable-object/surstromming.png",
-    "/assets/flushable-object/burrito.png",
-    "/assets/flushable-object/ciggie.png",
-    "/assets/flushable-object/fish.png",
-    "/assets/flushable-object/hamster.png",
-    "/assets/flushable-object/hulk.png",
-    "/assets/flushable-object/pedo.png",
-    "/assets/flushable-object/trump.png",
-  ];
-
-  await preloadAssets();
-
   function getRandomFlushObject() {
-    const randomIndex = Math.floor(Math.random() * flushableObjects.length);
-
-    return flushableObjects[randomIndex];
+    const randomIndex = Math.floor(Math.random() * FLUSHING_ITEM_SOURCES.length);
+    return FLUSHING_ITEM_SOURCES[randomIndex];
   }
-  const bg = Sprite.from("/assets/loading-screen/background-img.webp");
+
+  const bg = Sprite.from(ASSETS.BACKGROUND_IMG);
   container.addChild(bg);
 
   // Bowl container to hold water and seat, so they rotate together
@@ -118,7 +61,7 @@ export async function createFlushScreen(app, onVideoEnd) {
   app.stage.addChild(waterMask);
 
   //flushed water
-  const water = Sprite.from("/assets/flush/water.png");
+  const water = Sprite.from(ASSETS.WATER);
   water.anchor.set(0.5);
   bowlContainer.addChild(water);
   const defaultWaterTex = water.texture;
@@ -163,7 +106,7 @@ export async function createFlushScreen(app, onVideoEnd) {
 
   //tiolet seat
 
-  const seat = Sprite.from("/assets/flush/toilet-seat.png");
+  const seat = Sprite.from(ASSETS.TOILET_SEAT);
   seat.anchor.set(0.5);
   seat.x = app.screen.width / 2;
   seat.y = app.screen.height / 2;
@@ -200,13 +143,13 @@ export async function createFlushScreen(app, onVideoEnd) {
   const multiplierUI = createMultiplierUI(centerX, centerY);
   container.addChild(multiplierUI.container);
 
-  sound.add("flushSound", "/sounds/toilet-flush.mp3");
-  sound.add("hitsound", "/sounds/hit-sound.mp3");
-  sound.add("winSound", "/sounds/win-sound.mp3");
-  sound.add("peeBg", "/sounds/pee-background.mp3");
-  sound.add("pooBg", "/sounds/poo-background.mp3");
-  sound.add("phoneBg", "/sounds/phone-ringtone.mp3");
-  sound.add("plungerBg", "/sounds/plunger-background.mp3");
+  sound.add("flushSound", SOUNDS.FLUSH_SOUND);
+  sound.add("hitsound", SOUNDS.HIT_SOUND);
+  sound.add("winSound", SOUNDS.WIN_SOUND);
+  sound.add("peeBg", SOUNDS.PEE_BACKGROUND_SOUNDS);
+  sound.add("pooBg", SOUNDS.POO_BACKGROUND_SOUNDS);
+  sound.add("phoneBg", SOUNDS.PHONE_RINGTONE);
+  sound.add("plungerBg", SOUNDS.PLUNGER_BACKGROUND_SOUNDS);
 
   function resizeSeat() {
     if (!seat) return;
@@ -259,6 +202,11 @@ export async function createFlushScreen(app, onVideoEnd) {
     multiplierUI.container.x = app.screen.width / 2;
     multiplierUI.container.y = seat.y;
     multiplierUI.resize(isMobile);
+
+    // Keep the React pee-stream hook in sync with the current PIXI state.
+    // maxRadius changes on every resize — pushing it here means the hook
+    // reads the latest value from its stable renderer ref without restarting.
+    useFlushStore.getState().setRendererState({ app, maxRadius, particlesContainer });
   }
 
   resizeScene();

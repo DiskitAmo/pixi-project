@@ -1,4 +1,5 @@
 import styles from "./Logo.module.css";
+import { ASSETS } from "../../../lib/constants";
 
 interface LogoProps {
   className?: string;
@@ -8,7 +9,7 @@ interface LogoProps {
 export default function Logo({ className, style }: LogoProps) {
   return (
     <img
-      src="/assets/logo/logo1.svg"
+      src={ASSETS.LOGO_SVG}
       alt="Game Logo"
       className={`${styles.logo}${className ? ` ${className}` : ""}`}
       style={style}

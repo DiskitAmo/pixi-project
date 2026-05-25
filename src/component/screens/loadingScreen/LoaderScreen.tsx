@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { Assets } from "pixi.js";
 import Logo from "../logoContainer/Logo";
 import styles from "./LoaderScreen.module.css";
+import { ASSETS, PRELOAD_ASSETS } from "../../../lib/constants";
 
 interface LoaderScreenProps {
   onComplete: () => void;
@@ -10,19 +12,12 @@ export default function LoaderScreen({ onComplete }: LoaderScreenProps) {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    let rafId: number;
-    let prog = 0;
-
-    const animate = () => {
-      prog = Math.min(prog + 0.01, 1);
-      setProgress(prog);
-      if (prog < 1) {
-        rafId = requestAnimationFrame(animate);
-      }
-    };
-
-    rafId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafId);
+    Assets.load(PRELOAD_ASSETS, (p: number) => {
+      setProgress(p);
+    }).catch((err) => {
+      console.error("Asset preload error:", err);
+      setProgress(1);
+    });
   }, []);
 
   const isComplete = progress >= 1;
@@ -30,7 +25,7 @@ export default function LoaderScreen({ onComplete }: LoaderScreenProps) {
   return (
     <div className={styles.wrapper}>
       <img
-        src="/assets/loading-screen/bg.png"
+        src={ASSETS.LOADING_SCREEN_BG}
         alt="background"
         className={styles.bg}
       />

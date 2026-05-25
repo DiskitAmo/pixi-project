@@ -1,4 +1,5 @@
 import { Container, Sprite, Assets } from "pixi.js";
+import { ASSETS } from "../../lib/constants";
 
 export async function createVideoScreen(app, onVideoEnd) {
   const container = new Container();
@@ -6,7 +7,7 @@ export async function createVideoScreen(app, onVideoEnd) {
   //  Pixi v8 correct way to load video + preload logo in parallel
   const [texture] = await Promise.all([
     Assets.load({
-      src: "/assets/intro.mp4",
+      src: ASSETS.INTRO_VIDEO,
       loadParser: "loadVideo",
       data: {
         muted: true,
@@ -15,7 +16,7 @@ export async function createVideoScreen(app, onVideoEnd) {
         loop: false,
       },
     }),
-    Assets.load("/assets/logo/logo1.svg"),
+    Assets.load(ASSETS.LOGO_SVG),
   ]);
 
   if (!texture) {
@@ -32,17 +33,6 @@ export async function createVideoScreen(app, onVideoEnd) {
   const video = texture.source.resource;
 
   function resizeVideo() {
-    // if (
-    //   !video ||
-    //   !videoSprite ||
-    //   !videoSprite.texture ||
-    //   !videoSprite.texture.baseTexture ||
-    //   !video.videoWidth ||
-    //   !video.videoHeight
-    // ) {
-    //   return;
-    // }
-
     const screenW = app.screen.width;
     const screenH = app.screen.height;
     const videoW = video.videoWidth || 1920;
@@ -66,9 +56,9 @@ export async function createVideoScreen(app, onVideoEnd) {
   resizeVideo();
 
   // Logo
-  const logo = Sprite.from("/assets/logo/logo1.svg");
+  const logo = Sprite.from(ASSETS.LOGO_SVG);
   logo.anchor.set(0.5);
-  logo.scale.set(0.6);
+  logo.scale.set(0.4);
   logo.x = app.screen.width / 2;
   logo.y = app.screen.height / 2 - 80;
   container.addChild(logo);

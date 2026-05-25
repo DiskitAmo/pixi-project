@@ -1,4 +1,4 @@
-import { Sprite, Assets } from "pixi.js";
+import { Sprite } from "pixi.js";
 import { useFlushStore } from "../../store/useRoyalFlushStore";
 import { BONUS_CONFIG } from "./bonusOverlays";
 
@@ -63,52 +63,28 @@ export function createRoundStatusManager({
       let obj;
 
       if (pendingBonus === "pee") {
-        // PEE BONUS: full-screen animated sprite
-        const frames = BONUS_CONFIG.pee.objectFrames.map((path) =>
-          Assets.get(path),
-        );
-
-        obj = new Sprite(frames[0]);
-        obj.isPeeBonus = true;
-        obj.anchor.set(0.5, 1);
-        obj.x = centerX;
-        obj.y = app.screen.height + 40;
-        obj.width = app.screen.width * 0.35;
-        obj.height = app.screen.height * 1.15;
-
-        let peeFrameIndex = 0;
-        obj.peeFrameInterval = setInterval(() => {
-          peeFrameIndex = (peeFrameIndex + 1) % frames.length;
-          if (obj && !obj.destroyed) obj.texture = frames[peeFrameIndex];
-        }, 400);
-
-        // Sweeping movement — horizontal only, y stays pinned to screen bottom
-        let peeMoveT = 0;
-        obj.peeMoveTicker = () => {
-          if (obj.destroyed) return;
-          const { x: cx } = getCenter();
-          peeMoveT += 0.018;
-
-          const swingX = Math.sin(peeMoveT * 0.9) * 90
-                       + Math.sin(peeMoveT * 2.1) * 22;
-          obj.x = cx + swingX;
-          obj.y = app.screen.height + 40;
-          obj.rotation = Math.sin(peeMoveT * 0.9) * 0.12;
-        };
-        app.ticker.add(obj.peeMoveTicker);
+        // PEE BONUS: animation is handled by the usePeeStreamAnimation React hook
+        // (PeeStreamOverlay component). Place a plain sentinel here so the
+        // COMPLETED phase can still trigger winner-zoom and round cleanup.
+        obj = { isPeeBonus: true, isBonusHandled: false, isCompletedHandled: false };
+      } else if (pendingBonus === "poo") {
+        // POO BONUS: animation is handled by the usePooAnimation React hook
+        // (PooStreamOverlay component). Same sentinel pattern as pee.
+        obj = { isPooBonus: true, isBonusHandled: false, isCompletedHandled: false };
       } else {
-        // NORMAL / BONUS (poo, phone, plunger): orbiting sprite
+        // NORMAL / BONUS (phone, plunger): orbiting sprite
         obj = Sprite.from(round.texture);
         obj.anchor.set(0.5);
         obj.orbitAngle = Math.random() * Math.PI * 2;
         obj.orbitRadius = 180;
         obj.spinSpeed = 0.02;
-        obj.shrinkSpeed = 0.8;
+        obj.shrinkSpeed = 0.4;
         obj.x = centerX + Math.cos(obj.orbitAngle) * obj.orbitRadius;
         obj.y = centerY + Math.sin(obj.orbitAngle) * obj.orbitRadius;
+
+        container.addChild(obj);
       }
 
-      container.addChild(obj);
       activeSprites.set(round.roundId, obj);
     }
 
@@ -118,13 +94,8 @@ export function createRoundStatusManager({
       const obj = activeSprites.get(round.roundId);
       if (!obj) return;
 
-      if (obj.isPeeBonus) {
-        // Pee bonus stays static; fire triggerBonus after the display window
-        if (obj.bonusTriggered) return;
-        obj.bonusTriggered = true;
-        setTimeout(() => {
-          useFlushStore.getState().triggerBonus(round.roundId, "pee");
-        }, 10000);
+      if (obj.isPeeBonus || obj.isPooBonus) {
+        // Animation + triggerBonus timing are fully managed by the React hook overlay.
         return;
       }
 
@@ -151,14 +122,15 @@ export function createRoundStatusManager({
       if (!obj || obj.isBonusHandled) return;
       obj.isBonusHandled = true;
 
-      if (obj.peeFrameInterval) {
-        clearInterval(obj.peeFrameInterval);
-        obj.peeFrameInterval = null;
+      if (obj.isPeeBonus || obj.isPooBonus) {
+        // Hook already cleaned up the PIXI sprite when enabled → false.
+        // Just advance the round after a brief hold.
+        setTimeout(() => {
+          useFlushStore.getState().completeRound(round.roundId);
+        }, 1500);
+        return;
       }
-      if (obj.peeMoveTicker) {
-        app.ticker.remove(obj.peeMoveTicker);
-        obj.peeMoveTicker = null;
-      }
+
       obj.visible = false;
 
       setTimeout(() => {
@@ -173,7 +145,11 @@ export function createRoundStatusManager({
       if (!obj || obj.isCompletedHandled) return;
       obj.isCompletedHandled = true;
 
-      obj.rotation = 0;
+      // pee/poo sentinels have no PIXI sprite — skip property mutations that
+      // only apply to real Sprite objects.
+      if (!obj.isPeeBonus && !obj.isPooBonus) {
+        obj.rotation = 0;
+      }
 
       lockState.isLocked = true;
       multiplierUI.update(round.multiplier);
@@ -208,7 +184,11 @@ export function createRoundStatusManager({
           stopBonusMusic();
         }
 
-        container.removeChild(obj);
+        // Only remove from the PIXI container if this was a real sprite
+        if (!obj.isPeeBonus && !obj.isPooBonus) {
+          container.removeChild(obj);
+        }
+
         activeSprites.delete(finishedRoundId);
         useFlushStore.getState().removeRound(finishedRoundId);
 

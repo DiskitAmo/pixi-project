@@ -1,5 +1,5 @@
 //import { RiskLevel } from '@/lib/constants';
-import { Texture } from "pixi.js";
+import { Texture, Container, Application } from "pixi.js";
 import { create } from "zustand";
 
 export const RISK_LEVELS = ["low", "medium", "high"] as const;
@@ -33,6 +33,12 @@ export interface FlushRound {
 
 export type GamePhase = "loader" | "video" | "loading" | "game";
 
+export interface RendererState {
+  app: Application | null;
+  maxRadius: number;
+  particlesContainer: Container | null;
+}
+
 export interface PixiActions {
   triggerFlush: () => void;
   triggerAutoplay: () => void;
@@ -59,6 +65,9 @@ interface FlushState {
 
   announcingBonus: boolean;
   announcingBonusType: FlushBonusType | null;
+
+  rendererState: RendererState;
+  setRendererState: (state: RendererState) => void;
 
   setRisk: (risk: RiskLevel) => void;
   setBetAmount: (amount: number) => void;
@@ -108,6 +117,9 @@ export const useFlushStore = create<FlushState>((set) => ({
 
   announcingBonus: false,
   announcingBonusType: null,
+
+  rendererState: { app: null, maxRadius: 200, particlesContainer: null },
+  setRendererState: (state) => set({ rendererState: state }),
 
   /* ================================
      Core

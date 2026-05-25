@@ -1,5 +1,6 @@
 import { Container, Graphics, Sprite, Text } from "pixi.js";
 import { sound } from "@pixi/sound";
+import { ASSETS } from "../../lib/constants";
 
 // Bonus type list
 
@@ -9,28 +10,24 @@ export const BONUS_TYPES = ["pee", "poo"];
 
 export const BONUS_CONFIG = {
   pee: {
-    announcement: "/assets/pee/weee-bonus.webp",
-    objectFrames: [
-      "/assets/pee/pee-stream-1.png",
-      "/assets/pee/pee-stream-2.png",
-      "/assets/pee/pee-stream-3.png",
-    ],
-    water: "/assets/pee/water-yellow.png",
+    announcement: ASSETS.WEEE_BONUS,
+    objectFrames: [ASSETS.PEE_STREAM_1, ASSETS.PEE_STREAM_2, ASSETS.PEE_STREAM_3],
+    water: ASSETS.PEE_WATER,
   },
   poo: {
-    announcement: "/assets/poo/turd-time.webp",
-    object: "/assets/poo/poo.png",
-    water: "/assets/poo/water-green.png",
+    announcement: ASSETS.TURD_TIME,
+    object: ASSETS.POO,
+    water: ASSETS.POO_WATER,
   },
   phone: {
-    announcement: "/assets/phone/booty-call.webp",
-    object: "/assets/phone/phone.webp",
-    water: "/assets/phone/purple-water.webp",
+    announcement: ASSETS.BOOTY_CALL,
+    object: ASSETS.PHONE,
+    water: ASSETS.PURPLE_WATER,
   },
   plunger: {
-    announcement: "/assets/plunger/plunger-rush.webp",
-    object: "/assets/plunger/plunger.png",
-    water: "/assets/plunger/orange-water.webp",
+    announcement: ASSETS.PLUNGER_RUSH,
+    object: ASSETS.PLUNGER,
+    water: ASSETS.ORANGE_WATER,
   },
 };
 

@@ -117,12 +117,12 @@ export default function BetControls({
               >
                 <span> {isAuto ? "Stop" : ""}</span>
                 <span> {isAuto ? autoRemaining : ""}</span>
-
+                {/* 
                 {!isAuto && (
                   <div className={styles.betAmountFeedback}>
                     ${betAmount.toFixed(2)}
                   </div>
-                )}
+                )} */}
               </button>
             </div>
           </div>

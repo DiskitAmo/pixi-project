@@ -327,7 +327,7 @@
   .maxButton {
     top: 15px;
     right: unset;
-    left: 24px;
+    left: 0;
   }
   .betWrapper {
     padding-right: 0;

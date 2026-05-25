@@ -2,6 +2,10 @@ import { useFlushStore } from "../../store/useRoyalFlushStore";
 import LoaderScreen from "./loadingScreen/LoaderScreen";
 import GameControls from "./gameControls/gameControl";
 import GameLoadingScreen from "./GameLoadingScreen";
+import PeeStreamOverlay from "./pee-overlay/PeeStreamOverlay";
+import PooStreamOverlay from "./poo-overlay/PooStreamOverlay";
+import { AssetProvider } from "../../context/AssetContext";
+import { PixiRendererProvider } from "../../context/PixiRendererContext";
 
 interface GameWrapperProps {
   onStart: () => void;
@@ -23,11 +27,18 @@ export default function GameWrapper({ onStart }: GameWrapperProps) {
 
   if (gamePhase === "game" && pixiActions) {
     return (
-      <GameControls
-        onBetClick={() => pixiActions.triggerFlush()}
-        onAutoplayClick={() => pixiActions.triggerAutoplay()}
-        onToggleMute={() => pixiActions.toggleMusic()}
-      />
+      <AssetProvider>
+        <PixiRendererProvider>
+          {/* Invisible — drives bonus animations onto the PIXI canvas */}
+          <PeeStreamOverlay />
+          <PooStreamOverlay />
+          <GameControls
+            onBetClick={() => pixiActions.triggerFlush()}
+            onAutoplayClick={() => pixiActions.triggerAutoplay()}
+            onToggleMute={() => pixiActions.toggleMusic()}
+          />
+        </PixiRendererProvider>
+      </AssetProvider>
     );
   }
 

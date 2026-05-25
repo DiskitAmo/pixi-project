@@ -30,9 +30,9 @@ export const FLUSHING_ITEM_SOURCES = [
 
 // Asset paths
 export const ASSETS = {
-  LOADING_BG: "/assets/images/loading-screen/Loading-bg.webp",
+  // ── Loading screen ──────────────────────────────────────────────────────────
+  LOADING_SCREEN_BG: "/assets/loading-screen/bg.png",
   WTFSTUDIOS_IMG: "/assets/images/loading-screen/WTFSTUDIOS.png",
-
   FLUSH_ITEMS_AND_HIT_MULTIPLIERS_IMG:
     "/assets/images/loading-screen/Flush-items-and-hit-multipliers.png",
   BIGGER_MULTIPLIERS_IMG:
@@ -40,40 +40,42 @@ export const ASSETS = {
   CRAZIER_BONUSES_IMG:
     "/assets/images/loading-screen/Increase-risk-crazier-bonuses.png",
 
-  TOILET_SEAT: "/assets/images/toilet-seat.webp",
-  WATER: "/assets/images/water.png",
-  LOGO: "/assets/images/logo/royal-flush-logo.webp",
+  // ── Core game ───────────────────────────────────────────────────────────────
+  BACKGROUND_IMG: "/assets/loading-screen/background-img.webp",
+  TOILET_SEAT: "/assets/flush/toilet-seat.png",
+  WATER: "/assets/flush/water.png",
+  LOGO: "/assets/logo/logo.png",
+  LOGO_SVG: "/assets/logo/logo1.svg",
   MARBLES: "/assets/images/background/marbles.png",
-  INTRO_VIDEO: "/assets/video/intro.mp4",
-
-  // Background assets
-  BACKGROUND_IMG: "/assets/images/background/background-img.webp",
   AUTOPLAY_MODAL_BG: "/assets/images/background/autoplay-modal-bg.png",
 
-  // Poo assets
-  POO_WATER: "/assets/images/poo/water-green.png",
-  TURD_TIME: "/assets/images/poo/turd-time.webp",
-  POO: "/assets/images/poo/poo.png",
+  // ── Video ───────────────────────────────────────────────────────────────────
+  INTRO_VIDEO: "/assets/intro.mp4",
 
-  // Pee assets
-  WEEE_BONUS: "/assets/images/pee/weee-bonus.webp",
-  PEE_WATER: "/assets/images/pee/water-yellow.png",
-  PEE_STREAM_1: "/assets/images/pee/pee-stream-1.png",
-  PEE_STREAM_2: "/assets/images/pee/pee-stream-2.png",
-  PEE_STREAM_3: "/assets/images/pee/pee-stream-3.png",
+  // ── Poo bonus ───────────────────────────────────────────────────────────────
+  TURD_TIME: "/assets/poo/turd-time.webp",
+  POO: "/assets/poo/poo.png",
+  POO_WATER: "/assets/poo/water-green.png",
 
-  // Phone assets
-  BOOTY_CALL: "/assets/images/phone/booty-call.webp",
+  // ── Pee bonus ───────────────────────────────────────────────────────────────
+  WEEE_BONUS: "/assets/pee/weee-bonus.webp",
+  PEE_STREAM_1: "/assets/pee/pee-stream-1.png",
+  PEE_STREAM_2: "/assets/pee/pee-stream-2.png",
+  PEE_STREAM_3: "/assets/pee/pee-stream-3.png",
+  PEE_WATER: "/assets/pee/water-yellow.png",
+
+  // ── Phone bonus ─────────────────────────────────────────────────────────────
+  BOOTY_CALL: "/assets/phone/booty-call.webp",
+  PHONE: "/assets/phone/phone.webp",
+  PURPLE_WATER: "/assets/phone/purple-water.webp",
   PHONE_IN_HAND_1: "/assets/images/phone/phone-in-hand-1.webp",
   PHONE_IN_HAND_2: "/assets/images/phone/phone-in-hand-2.webp",
   PHONE_IN_HAND_3: "/assets/images/phone/phone-in-hand-3.webp",
-  PHONE: "/assets/images/phone/phone.webp",
-  PURPLE_WATER: "/assets/images/phone/purple-water.webp",
 
-  // Plunger assets
-  PLUNGER_RUSH: "/assets/images/plunger/plunger-rush.webp",
-  ORANGE_WATER: "/assets/images/plunger/orange-water.webp",
-  PLUNGER: "/assets/images/plunger/plunger.png",
+  // ── Plunger bonus ───────────────────────────────────────────────────────────
+  PLUNGER_RUSH: "/assets/plunger/plunger-rush.webp",
+  PLUNGER: "/assets/plunger/plunger.png",
+  ORANGE_WATER: "/assets/plunger/orange-water.webp",
   PLUNGER_SUCCESS: "/assets/images/plunger/plunger-success.png",
 } as const;
 
@@ -89,6 +91,45 @@ export const SOUNDS = {
   TOILET_SUCKER_PLUNGER: "/sounds/toilet-sucker-plunger.mp3",
   PLUNGER_BACKGROUND_SOUNDS: "/sounds/plunger-background.mp3",
 } as const;
+
+// All assets preloaded on the initial loading screen.
+// INTRO_VIDEO and BACKGROUND_SOUNDS are intentionally excluded —
+// the video is loaded separately in introVideo.js and the casino
+// music uses the native Audio API (not PIXI.Assets).
+export const PRELOAD_ASSETS: string[] = [
+  // ── Core game images ────────────────────────────────────────────────────────
+  ASSETS.BACKGROUND_IMG,
+  ASSETS.TOILET_SEAT,
+  ASSETS.WATER,
+  // ── Flushable objects ───────────────────────────────────────────────────────
+  ...FLUSHING_ITEM_SOURCES,
+  // ── Pee bonus ───────────────────────────────────────────────────────────────
+  ASSETS.WEEE_BONUS,
+  ASSETS.PEE_STREAM_1,
+  ASSETS.PEE_STREAM_2,
+  ASSETS.PEE_STREAM_3,
+  ASSETS.PEE_WATER,
+  // ── Poo bonus ───────────────────────────────────────────────────────────────
+  ASSETS.TURD_TIME,
+  ASSETS.POO,
+  ASSETS.POO_WATER,
+  // ── Phone bonus ─────────────────────────────────────────────────────────────
+  ASSETS.BOOTY_CALL,
+  ASSETS.PHONE,
+  ASSETS.PURPLE_WATER,
+  // ── Plunger bonus ───────────────────────────────────────────────────────────
+  ASSETS.PLUNGER_RUSH,
+  ASSETS.PLUNGER,
+  ASSETS.ORANGE_WATER,
+  // ── Sounds (BACKGROUND_SOUNDS uses native Audio — excluded) ─────────────────
+  SOUNDS.FLUSH_SOUND,
+  SOUNDS.HIT_SOUND,
+  SOUNDS.WIN_SOUND,
+  SOUNDS.PEE_BACKGROUND_SOUNDS,
+  SOUNDS.POO_BACKGROUND_SOUNDS,
+  SOUNDS.PHONE_RINGTONE,
+  SOUNDS.PLUNGER_BACKGROUND_SOUNDS,
+];
 
 // Game settings
 export const GAME_SETTINGS = {
@@ -174,20 +215,27 @@ export const BONUS_MODE = {
   WEEE_BONUS_SCALE: 1.3,
   WEEE_ROTATION_ANGLE: 8,
   WEEE_ROTATION_SPEED: 100,
-  PEE_STREAM_DURATION: 4000,
+  PEE_STREAM_DURATION: 10000,
   PEE_STREAM_FRAME_DURATION: 200,
   PEE_STREAM_SIZE: 400,
   PEE_STREAM_SIZE_SMALL_DESKTOP: 300,
   PEE_STREAM_SIZE_MOBILE: 180,
 
   // POO bonus settings
-  POO_SIZE: 280,
-  POO_SIZE_MOBILE: 150,
+  POO_SIZE_DESKTOP: 260,
+  POO_SIZE_MOBILE: 120,
+  POO_ORBIT_RADIUS_START: 180,
+  POO_ORBIT_SPIN_SPEED: 0.02,
+  POO_ORBIT_SHRINK_SPEED: 0.35, // 180 / 0.35 ≈ 514 frames ≈ 8.5 s at 60 fps
+  POO_ROTATION_PER_FRAME: 0.15,
+  POO_SCALE_DECAY: 0.998,
+  POO_FADE_START_RADIUS: 40,
+  POO_FADE_STEP: 0.02,
+  POO_FINISH_RADIUS: 10,
   TURD_TIME_DURATION: 3500,
   TURD_TIME_SCALE: 1.3,
   TURD_ROTATION_ANGLE: 8,
   TURD_ROTATION_SPEED: 100,
-  POO_SPEED_MULTIPLIER: 0.5,
 
   // PHONE bonus settings
   PHONE_SIZE: 280,

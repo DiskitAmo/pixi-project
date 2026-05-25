@@ -1,11 +1,12 @@
 import { useFlushStore } from "../../../store/useRoyalFlushStore";
 import styles from "./BonusBadge.module.css";
+import { ASSETS } from "../../../lib/constants";
 
 const ANNOUNCEMENT_IMAGES: Record<string, string> = {
-  pee: "/assets/pee/weee-bonus.webp",
-  poo: "/assets/poo/turd-time.webp",
-  phone: "/assets/phone/booty-call.webp",
-  plunger: "/assets/plunger/plunger-rush.webp",
+  pee: ASSETS.WEEE_BONUS,
+  poo: ASSETS.TURD_TIME,
+  phone: ASSETS.BOOTY_CALL,
+  plunger: ASSETS.PLUNGER_RUSH,
 };
 
 export default function BonusBadge() {
