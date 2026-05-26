@@ -41,6 +41,7 @@ export function createMultiplierUI(centerX, centerY) {
 
   container.x = centerX;
   container.y = centerY;
+  container.zIndex = 96; // above flushable objects (default 0), below overlays (95-100)
 
   // Tracks current size so update/showReady always redraw at the right radius
   let radius = 110;

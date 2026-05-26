@@ -31,7 +31,7 @@ export async function createFlushScreen(app, onVideoEnd) {
   // Dedicated container for React-hook-driven particle effects (pee stream, etc.)
   // Sits above game objects but below the seat/UI overlays.
   const particlesContainer = new Container();
-  particlesContainer.zIndex = 50;
+  particlesContainer.zIndex = 1008; // above multiplier (1007)
   container.addChild(particlesContainer);
 
   let centerX = window.innerWidth / 2;
@@ -40,7 +40,9 @@ export async function createFlushScreen(app, onVideoEnd) {
   let isMobile = window.innerWidth < 768;
   // console.log("Is mobile:", isMobile);
   function getRandomFlushObject() {
-    const randomIndex = Math.floor(Math.random() * FLUSHING_ITEM_SOURCES.length);
+    const randomIndex = Math.floor(
+      Math.random() * FLUSHING_ITEM_SOURCES.length,
+    );
     return FLUSHING_ITEM_SOURCES[randomIndex];
   }
 
@@ -148,7 +150,7 @@ export async function createFlushScreen(app, onVideoEnd) {
   sound.add("winSound", SOUNDS.WIN_SOUND);
   sound.add("peeBg", SOUNDS.PEE_BACKGROUND_SOUNDS);
   sound.add("pooBg", SOUNDS.POO_BACKGROUND_SOUNDS);
-  sound.add("phoneBg", SOUNDS.PHONE_RINGTONE);
+  sound.add("phoneBg", SOUNDS.PHONE_BONUS_MUSIC);
   sound.add("plungerBg", SOUNDS.PLUNGER_BACKGROUND_SOUNDS);
 
   function resizeSeat() {
@@ -206,7 +208,9 @@ export async function createFlushScreen(app, onVideoEnd) {
     // Keep the React pee-stream hook in sync with the current PIXI state.
     // maxRadius changes on every resize — pushing it here means the hook
     // reads the latest value from its stable renderer ref without restarting.
-    useFlushStore.getState().setRendererState({ app, maxRadius, particlesContainer });
+    useFlushStore
+      .getState()
+      .setRendererState({ app, maxRadius, particlesContainer });
   }
 
   resizeScene();
@@ -217,15 +221,24 @@ export async function createFlushScreen(app, onVideoEnd) {
     stopBonusMusic,
     showBonusAnnouncement,
     showWinnerZoom,
+    showPhoneAnimation,
   } = createBonusOverlays({ app, container });
 
   function triggerFlush(isAutoplay = false) {
     const roundId = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
-    // Decide if this flush triggers a bonus (autoplay rounds are always normal flushes)
+    // Decide if this flush triggers a bonus.
+    // Bonuses are disabled for medium risk — autoplay rounds are also always normal.
     flushCount++;
+    const currentRisk = useFlushStore.getState().currentRisk;
+    console.log(
+      currentRisk,
+      flushCount,
+      nextBonusAt,
+      "flush count / next bonus at",
+    );
     let bonusType = null;
-    if (!isAutoplay && flushCount >= nextBonusAt) {
+    if (!isAutoplay && currentRisk !== "medium" && flushCount >= nextBonusAt) {
       bonusType = BONUS_TYPES[Math.floor(Math.random() * BONUS_TYPES.length)];
       pendingBonusForRound.set(roundId, bonusType);
       flushCount = 0;
@@ -249,15 +262,14 @@ export async function createFlushScreen(app, onVideoEnd) {
           flushOverlay.texture,
         );
 
-      // Swap water to bonus color immediately
-      const bonusWater = Assets.get(config.water);
-      if (bonusWater) water.texture = bonusWater;
-
       // Show announcement banner + badge, hold spiral until banner finishes
       useFlushStore.getState().setAnnouncingBonus(true, bonusType);
       playBonusMusic(bonusType);
       delayedRounds.add(roundId);
       showBonusAnnouncement(bonusType, () => {
+        // Swap water to bonus colour only after the announcement overlay is gone
+        const bonusWater = Assets.get(config.water);
+        if (bonusWater) water.texture = bonusWater;
         delayedRounds.delete(roundId);
       });
     } else {
@@ -374,8 +386,9 @@ export async function createFlushScreen(app, onVideoEnd) {
   }
 
   // ─── Autoplay tracker ────────────────────────────────────────────────────────
-  // Tracks which rounds belong to the current autoplay batch so we can detect
-  // when they all finish naturally (→ trigger end-bonus) vs being stopped.
+  // Tracks which rounds belong to the current autoplay batch.
+  // When a batch finishes naturally, a new batch starts immediately so flushing
+  // continues until the user explicitly presses Stop.
 
   let autoplayRoundIds = new Set(); // IDs still in flight
   let autoplayPendingLaunches = 0; // setTimeouts not yet fired
@@ -385,8 +398,8 @@ export async function createFlushScreen(app, onVideoEnd) {
     if (autoplayRoundIds.size > 0) return; // rounds still spiraling
     if (!useFlushStore.getState().isAuto) return; // user pressed STOP
 
-    // All rounds finished naturally → trigger an end bonus then exit auto mode
-    triggerEndBonus();
+    // Batch finished naturally — immediately start the next one
+    triggerAutoplay();
   }
 
   function handleAutoplayRoundComplete(roundId) {
@@ -397,13 +410,6 @@ export async function createFlushScreen(app, onVideoEnd) {
 
   function isAutoplayRound(roundId) {
     return autoplayRoundIds.has(roundId);
-  }
-
-  function triggerEndBonus() {
-    useFlushStore.getState().stopAutoplay();
-    // Force the very next triggerFlush to pick a bonus
-    flushCount = nextBonusAt - 1;
-    triggerFlush();
   }
 
   function triggerAutoplay() {
@@ -437,6 +443,7 @@ export async function createFlushScreen(app, onVideoEnd) {
     pendingBonusForRound,
     stopBonusMusic,
     showWinnerZoom,
+    showPhoneAnimation,
     multiplierUI,
     sound,
     createSprinkleEffect,

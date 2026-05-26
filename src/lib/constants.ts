@@ -68,9 +68,9 @@ export const ASSETS = {
   BOOTY_CALL: "/assets/phone/booty-call.webp",
   PHONE: "/assets/phone/phone.webp",
   PURPLE_WATER: "/assets/phone/purple-water.webp",
-  PHONE_IN_HAND_1: "/assets/images/phone/phone-in-hand-1.webp",
-  PHONE_IN_HAND_2: "/assets/images/phone/phone-in-hand-2.webp",
-  PHONE_IN_HAND_3: "/assets/images/phone/phone-in-hand-3.webp",
+  PHONE_IN_HAND_1: "/assets/phone/phone-in-hand-1.webp",
+  PHONE_IN_HAND_2: "/assets/phone/phone-in-hand-2.webp",
+  PHONE_IN_HAND_3: "/assets/phone/phone-in-hand-3.webp",
 
   // ── Plunger bonus ───────────────────────────────────────────────────────────
   PLUNGER_RUSH: "/assets/plunger/plunger-rush.webp",
@@ -117,6 +117,10 @@ export const PRELOAD_ASSETS: string[] = [
   ASSETS.BOOTY_CALL,
   ASSETS.PHONE,
   ASSETS.PURPLE_WATER,
+  ASSETS.PHONE_IN_HAND_1,
+  ASSETS.PHONE_IN_HAND_2,
+  ASSETS.PHONE_IN_HAND_3,
+  SOUNDS.PHONE_BONUS_MUSIC,
   // ── Plunger bonus ───────────────────────────────────────────────────────────
   ASSETS.PLUNGER_RUSH,
   ASSETS.PLUNGER,
@@ -227,7 +231,7 @@ export const BONUS_MODE = {
   POO_ORBIT_RADIUS_START: 180,
   POO_ORBIT_SPIN_SPEED: 0.02,
   POO_ORBIT_SHRINK_SPEED: 0.35, // 180 / 0.35 ≈ 514 frames ≈ 8.5 s at 60 fps
-  POO_ROTATION_PER_FRAME: 0.15,
+  POO_ROTATION_PER_FRAME: 0.05,
   POO_SCALE_DECAY: 0.998,
   POO_FADE_START_RADIUS: 40,
   POO_FADE_STEP: 0.02,
@@ -239,7 +243,7 @@ export const BONUS_MODE = {
 
   // PHONE bonus settings
   PHONE_SIZE: 280,
-  PHONE_SIZE_MOBILE: 150,
+  PHONE_SIZE_MOBILE: 100,
   BOOTY_CALL_DURATION: 3500, // Logo display duration
   BOOTY_CALL_SCALE: 1.3,
   BOOTY_CALL_VIBRATE_ANGLE: 12, // Shake angle in degrees (stronger than poo/pee)
@@ -249,6 +253,8 @@ export const BONUS_MODE = {
   PHONE_IN_HAND_START_DELAY: 500, // Delay after logo appears before hand animation starts
   PHONE_SPEED_MULTIPLIER: 0.5, // Same as POO - slower for longer animation
   PHONE_TOTAL_ANIMATION_DURATION: 5500, // 5-6 seconds total
+  PHONE_ORBIT_SPIN_SPEED: 0.012, // orbit angle per frame (poo = 0.02)
+  PHONE_ORBIT_ROTATION_PER_FRAME: 0.07, // self-rotation per frame (poo = 0.15)
 
   // PLUNGER bonus settings
   PLUNGER_SIZE: 400,

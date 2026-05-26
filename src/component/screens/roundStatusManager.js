@@ -1,6 +1,7 @@
 import { Sprite } from "pixi.js";
 import { useFlushStore } from "../../store/useRoyalFlushStore";
 import { BONUS_CONFIG } from "./bonusOverlays";
+import { FLOATER } from "../../lib/constants";
 
 /**
  * Creates the per-frame round-status handler used in the game ticker.
@@ -18,6 +19,7 @@ import { BONUS_CONFIG } from "./bonusOverlays";
  * @param {Map}                             ctx.pendingBonusForRound
  * @param {Function}                        ctx.stopBonusMusic
  * @param {Function}                        ctx.showWinnerZoom
+ * @param {Function}                        ctx.showPhoneAnimation
  * @param {{ container, update: Function }} ctx.multiplierUI
  * @param {import("@pixi/sound").sound}     ctx.sound
  * @param {Function}                        ctx.createSprinkleEffect
@@ -38,6 +40,7 @@ export function createRoundStatusManager({
   pendingBonusForRound,
   stopBonusMusic,
   showWinnerZoom,
+  showPhoneAnimation,
   multiplierUI,
   sound,
   createSprinkleEffect,
@@ -71,14 +74,22 @@ export function createRoundStatusManager({
         // POO BONUS: animation is handled by the usePooAnimation React hook
         // (PooStreamOverlay component). Same sentinel pattern as pee.
         obj = { isPooBonus: true, isBonusHandled: false, isCompletedHandled: false };
+      } else if (pendingBonus === "phone") {
+        // PHONE BONUS: animation is handled by showPhoneAnimation (PixiJS, bonusOverlays.js).
+        // Sentinel pattern — no orbiting sprite; animation fires during "spinning".
+        obj = { isPhoneBonus: true, isBonusHandled: false, isCompletedHandled: false };
       } else {
-        // NORMAL / BONUS (phone, plunger): orbiting sprite
+        // NORMAL / BONUS (plunger): orbiting sprite
         obj = Sprite.from(round.texture);
         obj.anchor.set(0.5);
         obj.orbitAngle = Math.random() * Math.PI * 2;
         obj.orbitRadius = 180;
         obj.spinSpeed = 0.02;
         obj.shrinkSpeed = 0.4;
+        // Random self-rotation direction and speed per object
+        obj.rotationSpeed =
+          FLOATER.ROTATION_SPEED_MIN +
+          Math.random() * (FLOATER.ROTATION_SPEED_MAX - FLOATER.ROTATION_SPEED_MIN);
         obj.x = centerX + Math.cos(obj.orbitAngle) * obj.orbitRadius;
         obj.y = centerY + Math.sin(obj.orbitAngle) * obj.orbitRadius;
 
@@ -99,12 +110,24 @@ export function createRoundStatusManager({
         return;
       }
 
+      if (obj.isPhoneBonus) {
+        // Start the PixiJS phone animation exactly once, then wait for onDone → completeRound.
+        if (!obj.isBonusHandled) {
+          obj.isBonusHandled = true;
+          const { x: cx, y: cy } = getCenter();
+          showPhoneAnimation(() => {
+            useFlushStore.getState().completeRound(round.roundId);
+          }, cx, cy);
+        }
+        return;
+      }
+
       // Spiral the object toward the bowl center
       obj.orbitAngle += obj.spinSpeed;
       obj.orbitRadius -= obj.shrinkSpeed;
       obj.x = centerX + Math.cos(obj.orbitAngle) * obj.orbitRadius;
       obj.y = centerY + Math.sin(obj.orbitAngle) * obj.orbitRadius;
-      obj.rotation += 0.15;
+      obj.rotation += obj.rotationSpeed;
       obj.scale.x *= 0.995;
       obj.scale.y *= 0.995;
 
@@ -122,9 +145,8 @@ export function createRoundStatusManager({
       if (!obj || obj.isBonusHandled) return;
       obj.isBonusHandled = true;
 
-      if (obj.isPeeBonus || obj.isPooBonus) {
-        // Hook already cleaned up the PIXI sprite when enabled → false.
-        // Just advance the round after a brief hold.
+      if (obj.isPeeBonus || obj.isPooBonus || obj.isPhoneBonus) {
+        // Hook / animation already cleaned up; just advance the round after a brief hold.
         setTimeout(() => {
           useFlushStore.getState().completeRound(round.roundId);
         }, 1500);
@@ -145,9 +167,9 @@ export function createRoundStatusManager({
       if (!obj || obj.isCompletedHandled) return;
       obj.isCompletedHandled = true;
 
-      // pee/poo sentinels have no PIXI sprite — skip property mutations that
-      // only apply to real Sprite objects.
-      if (!obj.isPeeBonus && !obj.isPooBonus) {
+      // pee/poo/phone sentinels have no PIXI sprite — skip property mutations
+      // that only apply to real Sprite objects.
+      if (!obj.isPeeBonus && !obj.isPooBonus && !obj.isPhoneBonus) {
         obj.rotation = 0;
       }
 
@@ -185,7 +207,7 @@ export function createRoundStatusManager({
         }
 
         // Only remove from the PIXI container if this was a real sprite
-        if (!obj.isPeeBonus && !obj.isPooBonus) {
+        if (!obj.isPeeBonus && !obj.isPooBonus && !obj.isPhoneBonus) {
           container.removeChild(obj);
         }
 

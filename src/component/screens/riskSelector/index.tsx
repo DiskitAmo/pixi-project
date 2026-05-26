@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import styles from "./styles.module.css";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -7,8 +5,22 @@ import {
   selectCanPlaceBet,
   useFlushStore,
 } from "../../../store/useRoyalFlushStore";
+import type { RiskLevel } from "../../../store/useRoyalFlushStore";
 
-const risks = ["LOW", "MED", "HIGH"];
+const risks = ["LOW", "MED", "HIGH"] as const;
+
+// Map between UI labels and store values
+const UI_TO_STORE: Record<string, RiskLevel> = {
+  LOW: "low",
+  MED: "medium",
+  HIGH: "high",
+};
+const STORE_TO_INDEX: Record<RiskLevel, number> = {
+  low: 0,
+  medium: 1,
+  high: 2,
+};
+
 export const riskColors: Record<string, string> = {
   LOW: "#a855f7", // purple
   MED: "#3b82f6", // blue
@@ -16,13 +28,16 @@ export const riskColors: Record<string, string> = {
 };
 
 export default function GameControls() {
-  const [riskIndex, setRiskIndex] = useState(2); // default HIGH
-
+  const currentRisk = useFlushStore((s) => s.currentRisk);
+  const setRisk = useFlushStore((s) => s.setRisk);
   const canBet = useFlushStore(selectCanPlaceBet);
   const disabled = !canBet;
 
+  const riskIndex = STORE_TO_INDEX[currentRisk] ?? 0;
+
   const changeRisk = (dir: number) => {
-    setRiskIndex((prev) => (prev + dir + risks.length) % risks.length);
+    const newIndex = (riskIndex + dir + risks.length) % risks.length;
+    setRisk(UI_TO_STORE[risks[newIndex]]);
   };
 
   const color = riskColors[risks[riskIndex]];
