@@ -25,6 +25,7 @@ import { FLOATER } from "../../lib/constants";
  * @param {Function}                        ctx.getParticleColor
  * @param {{ isLocked: boolean }}           ctx.lockState        - shared mutable lock flag
  * @param {() => { x: number, y: number }}  ctx.getCenter        - returns live center coords
+ * @param {() => number}                    ctx.getMaxRadius     - returns live bowl radius (px)
  * @param {(id: string) => void}           [ctx.onRoundComplete] - called after full cleanup
  * @param {(id: string) => boolean}        [ctx.isAutoplayRound] - true when id is from autoplay
  * @returns {(round: object) => void}
@@ -45,6 +46,7 @@ export function createRoundStatusManager({
   getParticleColor,
   lockState,
   getCenter,
+  getMaxRadius,
   onRoundComplete,
   isAutoplayRound,
 }) {
@@ -80,8 +82,24 @@ export function createRoundStatusManager({
         // NORMAL / BONUS (plunger): orbiting sprite
         obj = Sprite.from(round.texture);
         obj.anchor.set(0.5);
+
+        // Scale sprite to fit the bowl — use live maxRadius so it adapts to
+        // mobile (smaller logical canvas) and desktop automatically.
+        const bowlRadius = getMaxRadius ? getMaxRadius() : 180;
+        const isMobileNow = window.innerWidth < 768;
+        const spriteSize = isMobileNow ? FLOATER.SIZE_MOBILE : FLOATER.SIZE;
+        obj.width = spriteSize;
+        obj.height = spriteSize;
+
         obj.orbitAngle = Math.random() * Math.PI * 2;
-        obj.orbitRadius = 180;
+        // Keep orbit inside the visual bowl on all screen sizes.
+        // Mobile  (maxRadius ≈ 222): 0.55× ≈ 122px — fits inside inner rim.
+        // Desktop (maxRadius ≈ 208 at base 400×700): 0.85× ≈ 177px ≈ old 180.
+        // Cap at 180 so large desktop screens (maxRadius 400–500px) don't send
+        // objects flying outside the toilet seat image.
+        obj.orbitRadius = isMobileNow
+          ? bowlRadius * 0.55
+          : Math.min(bowlRadius * 0.85, 180);
         obj.spinSpeed = 0.02;
         obj.shrinkSpeed = 0.4;
         // Random self-rotation direction and speed per object

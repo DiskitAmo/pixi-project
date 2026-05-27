@@ -19,14 +19,18 @@ export function PixiRendererProvider({
     app: null,
     maxRadius: 200,
     particlesContainer: null,
+    centerX: 0,
+    centerY: 0,
   }));
 
   // Mutate properties in-place so the object identity never changes.
-  // The hook reads renderer.maxRadius on every animation frame, so it
-  // always gets the current value without triggering effect re-runs.
+  // Animation hooks read these on every frame, so they always get the
+  // current values without triggering effect re-runs on resize.
   contextValue.app = storeState.app;
   contextValue.maxRadius = storeState.maxRadius;
   contextValue.particlesContainer = storeState.particlesContainer;
+  contextValue.centerX = storeState.centerX;
+  contextValue.centerY = storeState.centerY;
 
   return (
     <PixiRendererContext.Provider value={contextValue}>

@@ -41,9 +41,10 @@ export const BONUS_CONFIG = {
  * @param {object}                        ctx
  * @param {import("pixi.js").Application} ctx.app       - PixiJS app instance
  * @param {import("pixi.js").Container}   ctx.container - scene container
+ * @param {() => {x:number, y:number}}    ctx.getCenter - returns live bowl-centre coords
  * @returns {{ showBonusAnnouncement, playBonusMusic, stopBonusMusic }}
  */
-export function createBonusOverlays({ app, container }) {
+export function createBonusOverlays({ app, container, getCenter }) {
   // Background music
 
   const MUSIC_MAP = {
@@ -100,10 +101,13 @@ export function createBonusOverlays({ app, container }) {
     const config = BONUS_CONFIG[bonusType];
     const overlay = Sprite.from(config.announcement);
 
+    // Use live bowl-centre so the banner lands over the toilet on every screen size.
+    const { x: cx, y: cy } = getCenter();
+
     overlay.anchor.set(0.5);
     overlay.scale.set(0.5);
-    overlay.x = app.screen.width / 2;
-    overlay.y = app.screen.height / 2;
+    overlay.x = cx;
+    overlay.y = cy;
 
     // Fit within 42 % wide / 36 % tall while preserving aspect ratio
     const maxW = app.screen.width * 0.42;
@@ -123,8 +127,8 @@ export function createBonusOverlays({ app, container }) {
 
     // ── Shake / wobble while the announcement is visible ──────────────────
     // Two sine waves at different frequencies give an organic, non-mechanical feel.
-    const baseX = app.screen.width / 2;
-    const baseY = app.screen.height / 2;
+    const baseX = cx;
+    const baseY = cy;
     let shakeT = 0;
 
     const shakeFn = () => {
@@ -161,6 +165,11 @@ export function createBonusOverlays({ app, container }) {
    * @param {number} cy          - centre y (live)
    */
   function showWinnerZoom(multiplier, betAmount, cx, cy) {
+    // On mobile the bowl occupies the top 60% of a smaller canvas —
+    // scale the whole overlay down so it fits inside the inner toilet rim.
+    const isMobile = window.innerWidth < 768;
+    const mobileScale = isMobile ? 0.62 : 1.0;
+
     const winOverlay = new Container();
     winOverlay.x = cx;
     winOverlay.y = cy;
@@ -244,7 +253,9 @@ export function createBonusOverlays({ app, container }) {
 
       if (phase === "zoom") {
         const t = Math.min((now - zoomStart) / ZOOM_MS, 1);
-        winOverlay.scale.set(easeOutBack(t));
+        // Multiply by mobileScale so the final resting size is correct on
+        // mobile without changing any of the individual element dimensions.
+        winOverlay.scale.set(easeOutBack(t) * mobileScale);
         winOverlay.alpha = Math.min(t * 3, 1);
         if (t >= 1) {
           phase = "hold";

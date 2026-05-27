@@ -7,14 +7,12 @@ import { useFlushStore } from "../store/useRoyalFlushStore";
 interface AssetContextValue {
   peeStreams: PIXI.Texture[];
   poo: PIXI.Texture | null;
-  phoneInHandFrames: PIXI.Texture[];
   phone: PIXI.Texture | null;
 }
 
 const AssetContext = createContext<AssetContextValue>({
   peeStreams: [],
   poo: null,
-  phoneInHandFrames: [],
   phone: null,
 });
 
@@ -37,22 +35,13 @@ export function AssetProvider({ children }: { children: React.ReactNode }) {
     return (Assets.get(ASSETS.POO) as PIXI.Texture) ?? null;
   }, [isReady]);
 
-  const phoneInHandFrames = useMemo<PIXI.Texture[]>(() => {
-    if (!isReady) return [];
-    return [
-      Assets.get(ASSETS.PHONE_IN_HAND_1),
-      Assets.get(ASSETS.PHONE_IN_HAND_2),
-      Assets.get(ASSETS.PHONE_IN_HAND_3),
-    ].filter(Boolean) as PIXI.Texture[];
-  }, [isReady]);
-
   const phone = useMemo<PIXI.Texture | null>(() => {
     if (!isReady) return null;
     return (Assets.get(ASSETS.PHONE) as PIXI.Texture) ?? null;
   }, [isReady]);
 
   return (
-    <AssetContext.Provider value={{ peeStreams, poo, phoneInHandFrames, phone }}>
+    <AssetContext.Provider value={{ peeStreams, poo, phone }}>
       {children}
     </AssetContext.Provider>
   );

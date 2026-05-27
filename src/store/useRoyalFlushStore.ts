@@ -37,6 +37,9 @@ export interface RendererState {
   app: Application | null;
   maxRadius: number;
   particlesContainer: Container | null;
+  /** Live bowl-centre coordinates (differ from screen centre on mobile). */
+  centerX: number;
+  centerY: number;
 }
 
 export interface PixiActions {
@@ -118,7 +121,7 @@ export const useFlushStore = create<FlushState>((set) => ({
   announcingBonus: false,
   announcingBonusType: null,
 
-  rendererState: { app: null, maxRadius: 200, particlesContainer: null },
+  rendererState: { app: null, maxRadius: 200, particlesContainer: null, centerX: 0, centerY: 0 },
   setRendererState: (state) => set({ rendererState: state }),
 
   /* ================================

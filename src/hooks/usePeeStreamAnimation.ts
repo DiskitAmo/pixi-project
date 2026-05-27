@@ -51,8 +51,9 @@ export function usePeeStreamAnimation({
 
     if (!particlesContainer) return;
 
-    const centerX = app.screen.width / 2;
-    const centerY = app.screen.height / 2;
+    // centerX/centerY come from the renderer context which is mutated in-place
+    // on every resize — read them live inside animate() rather than capturing
+    // a stale snapshot here.
     const screenHeight = app.screen.height;
 
     const minAnimationDuration = BONUS_MODE.PEE_STREAM_DURATION;
@@ -77,7 +78,7 @@ export function usePeeStreamAnimation({
     peeStreamRef.current = stream;
 
     /** Init animation state */
-    // renderer.maxRadius is read at init; animate reads it live every frame
+    // maxRadius / centerX / centerY are read live inside animate() every frame
     const initMaxRadius = renderer!.maxRadius;
     animationStateRef.current = {
       angle: Math.random() * Math.PI * 2,
@@ -96,8 +97,10 @@ export function usePeeStreamAnimation({
 
       if (!stream || !state || finishedRef.current) return;
 
-      // Read maxRadius live so resize is reflected without restarting the effect
+      // Read live values every frame so resize updates are reflected immediately
       const maxRadius = renderer!.maxRadius;
+      const centerX = renderer!.centerX || app.screen.width / 2;
+      const centerY = renderer!.centerY || app.screen.height / 2;
       const bottomEdge = centerY + maxRadius * 0.75;
 
       const elapsed = Date.now() - state.animationStartTime;

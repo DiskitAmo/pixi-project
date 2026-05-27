@@ -1,0 +1,57 @@
+/* ── Outer container ─────────────────────────────────────────────────────────
+   On desktop  : covers the full #app / viewport — hand rises from screen bottom.
+   On mobile   : bottom is clamped to 40% so the container only spans the top
+                 60% of the screen (the toilet area). The hand therefore slides
+                 up within the game canvas and never overlaps the controls UI.
+   overflow:hidden clips any part of the wrapper that slides below the boundary.
+   ────────────────────────────────────────────────────────────────────────── */
+.wrapperContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;          /* desktop: full height */
+  z-index: 1008;
+  pointer-events: none;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+/* ── Animated wrapper: translateY is driven entirely by JS ───────────────── */
+.wrapper {
+  position: relative;
+  height: 64vh;
+  width: auto;
+  will-change: transform;
+}
+
+/* ── All three frames are stacked in the same spot; JS crossfades between them */
+.phoneImage {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@media (max-width: 767px) {
+  .wrapperContainer {
+    /* Clamp the container to the toilet area (top 60% of the screen).
+       The seat occupies seat.y = canvasH×0.3, seat.height = canvasH×0.6,
+       so its bottom edge lands at 60% from the top → bottom = 40% from top.
+       Using % here works correctly whether or not #app is CSS-scaled, because
+       a fixed element inside a transformed ancestor is sized relative to that
+       ancestor, so 40% always equals 40% of the #app logical height. */
+    bottom: 40%;
+  }
+
+  .wrapper {
+    height: 58vh;
+  }
+}

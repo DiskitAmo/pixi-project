@@ -205,12 +205,13 @@ export async function createFlushScreen(app, onVideoEnd) {
     multiplierUI.container.y = seat.y;
     multiplierUI.resize(isMobile);
 
-    // Keep the React pee-stream hook in sync with the current PIXI state.
-    // maxRadius changes on every resize — pushing it here means the hook
-    // reads the latest value from its stable renderer ref without restarting.
+    // Keep the React hooks in sync with the current PIXI state.
+    // maxRadius and the bowl-centre coordinates change on every resize —
+    // pushing them here means the hooks read the latest values from their
+    // stable renderer ref without restarting the animation effect.
     useFlushStore
       .getState()
-      .setRendererState({ app, maxRadius, particlesContainer });
+      .setRendererState({ app, maxRadius, particlesContainer, centerX, centerY });
   }
 
   resizeScene();
@@ -221,7 +222,7 @@ export async function createFlushScreen(app, onVideoEnd) {
     stopBonusMusic,
     showBonusAnnouncement,
     showWinnerZoom,
-  } = createBonusOverlays({ app, container });
+  } = createBonusOverlays({ app, container, getCenter: () => ({ x: centerX, y: centerY }) });
 
   function triggerFlush(isAutoplay = false) {
     const roundId = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -449,6 +450,7 @@ export async function createFlushScreen(app, onVideoEnd) {
     getParticleColor,
     lockState,
     getCenter: () => ({ x: centerX, y: centerY }),
+    getMaxRadius: () => maxRadius,
     onRoundComplete: handleAutoplayRoundComplete,
     isAutoplayRound,
   });

@@ -40,9 +40,6 @@ export function usePooAnimation({ enabled, onFinished }: UsePooAnimationProps) {
     const particlesContainer = renderer!.particlesContainer;
     if (!particlesContainer) return;
 
-    const centerX = app.screen.width / 2;
-    const centerY = app.screen.height / 2;
-
     finishedRef.current = false;
 
     // ── Create sprite ────────────────────────────────────────────────────────
@@ -55,10 +52,23 @@ export function usePooAnimation({ enabled, onFinished }: UsePooAnimationProps) {
     poo.width = size;
     poo.height = size;
 
+    // Read live bowl-centre (differs from screen centre on mobile)
+    const initCx = renderer!.centerX || app.screen.width / 2;
+    const initCy = renderer!.centerY || app.screen.height / 2;
+
+    // Scale orbit start radius to the actual bowl size so the poo never
+    // escapes the toilet rim on any screen. On desktop maxRadius ≈ 208 and
+    // 0.85× ≈ 177 (close to the old hardcoded 180). On mobile maxRadius ≈ 222
+    // and 0.55× ≈ 122, which fits safely inside the visual inner bowl.
+    const bowlRadius = renderer!.maxRadius;
+    const orbitStart = isMobile
+      ? bowlRadius * 0.55
+      : Math.min(bowlRadius * 0.85, BONUS_MODE.POO_ORBIT_RADIUS_START);
+
     // Place on the orbit circle at a random starting angle
     const startAngle = Math.random() * Math.PI * 2;
-    poo.x = centerX + Math.cos(startAngle) * BONUS_MODE.POO_ORBIT_RADIUS_START;
-    poo.y = centerY + Math.sin(startAngle) * BONUS_MODE.POO_ORBIT_RADIUS_START;
+    poo.x = initCx + Math.cos(startAngle) * orbitStart;
+    poo.y = initCy + Math.sin(startAngle) * orbitStart;
 
     particlesContainer.addChild(poo);
     pooRef.current = poo;
@@ -66,7 +76,7 @@ export function usePooAnimation({ enabled, onFinished }: UsePooAnimationProps) {
     // ── Orbit state ──────────────────────────────────────────────────────────
     orbitStateRef.current = {
       orbitAngle: startAngle,
-      orbitRadius: BONUS_MODE.POO_ORBIT_RADIUS_START,
+      orbitRadius: orbitStart,
       spinSpeed: BONUS_MODE.POO_ORBIT_SPIN_SPEED,
       shrinkSpeed: BONUS_MODE.POO_ORBIT_SHRINK_SPEED,
     };
@@ -77,9 +87,9 @@ export function usePooAnimation({ enabled, onFinished }: UsePooAnimationProps) {
       const state = orbitStateRef.current;
       if (!poo || !state || finishedRef.current) return;
 
-      // Read live center so resize doesn't break positioning
-      const cx = app.screen.width / 2;
-      const cy = app.screen.height / 2;
+      // Read live bowl-centre every frame so resize keeps poo inside the bowl
+      const cx = renderer!.centerX || app.screen.width / 2;
+      const cy = renderer!.centerY || app.screen.height / 2;
 
       state.orbitAngle += state.spinSpeed;
       state.orbitRadius -= state.shrinkSpeed;
