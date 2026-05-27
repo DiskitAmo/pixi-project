@@ -221,7 +221,6 @@ export async function createFlushScreen(app, onVideoEnd) {
     stopBonusMusic,
     showBonusAnnouncement,
     showWinnerZoom,
-    showPhoneAnimation,
   } = createBonusOverlays({ app, container });
 
   function triggerFlush(isAutoplay = false) {
@@ -346,6 +345,7 @@ export async function createFlushScreen(app, onVideoEnd) {
       particle.vy = (Math.random() - 0.5) * 12;
 
       particle.alpha = 1;
+      particle.zIndex = 1009; // above multiplier (1007) and particles container (1008)
 
       container.addChild(particle);
 
@@ -443,7 +443,6 @@ export async function createFlushScreen(app, onVideoEnd) {
     pendingBonusForRound,
     stopBonusMusic,
     showWinnerZoom,
-    showPhoneAnimation,
     multiplierUI,
     sound,
     createSprinkleEffect,

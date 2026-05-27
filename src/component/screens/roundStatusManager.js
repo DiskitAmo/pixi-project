@@ -19,7 +19,6 @@ import { FLOATER } from "../../lib/constants";
  * @param {Map}                             ctx.pendingBonusForRound
  * @param {Function}                        ctx.stopBonusMusic
  * @param {Function}                        ctx.showWinnerZoom
- * @param {Function}                        ctx.showPhoneAnimation
  * @param {{ container, update: Function }} ctx.multiplierUI
  * @param {import("@pixi/sound").sound}     ctx.sound
  * @param {Function}                        ctx.createSprinkleEffect
@@ -40,7 +39,6 @@ export function createRoundStatusManager({
   pendingBonusForRound,
   stopBonusMusic,
   showWinnerZoom,
-  showPhoneAnimation,
   multiplierUI,
   sound,
   createSprinkleEffect,
@@ -75,8 +73,8 @@ export function createRoundStatusManager({
         // (PooStreamOverlay component). Same sentinel pattern as pee.
         obj = { isPooBonus: true, isBonusHandled: false, isCompletedHandled: false };
       } else if (pendingBonus === "phone") {
-        // PHONE BONUS: animation is handled by showPhoneAnimation (PixiJS, bonusOverlays.js).
-        // Sentinel pattern — no orbiting sprite; animation fires during "spinning".
+        // PHONE BONUS: animation is handled by the usePhoneAnimation React hook
+        // (PhoneOverlay component). Same sentinel pattern as pee/poo.
         obj = { isPhoneBonus: true, isBonusHandled: false, isCompletedHandled: false };
       } else {
         // NORMAL / BONUS (plunger): orbiting sprite
@@ -105,20 +103,9 @@ export function createRoundStatusManager({
       const obj = activeSprites.get(round.roundId);
       if (!obj) return;
 
-      if (obj.isPeeBonus || obj.isPooBonus) {
-        // Animation + triggerBonus timing are fully managed by the React hook overlay.
-        return;
-      }
-
-      if (obj.isPhoneBonus) {
-        // Start the PixiJS phone animation exactly once, then wait for onDone → completeRound.
-        if (!obj.isBonusHandled) {
-          obj.isBonusHandled = true;
-          const { x: cx, y: cy } = getCenter();
-          showPhoneAnimation(() => {
-            useFlushStore.getState().completeRound(round.roundId);
-          }, cx, cy);
-        }
+      if (obj.isPeeBonus || obj.isPooBonus || obj.isPhoneBonus) {
+        // Animation is fully managed by the React hook overlay (PhoneOverlay,
+        // PeeStreamOverlay, PooStreamOverlay). Do nothing here.
         return;
       }
 

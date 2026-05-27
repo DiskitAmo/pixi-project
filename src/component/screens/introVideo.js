@@ -60,7 +60,7 @@ export async function createVideoScreen(app, onVideoEnd) {
   logo.anchor.set(0.5);
   logo.scale.set(0.4);
   logo.x = app.screen.width / 2;
-  logo.y = app.screen.height / 2 - 80;
+  logo.y = app.screen.height / 2 - 250;
   container.addChild(logo);
 
   // video.addEventListener("loadeddata", () => {

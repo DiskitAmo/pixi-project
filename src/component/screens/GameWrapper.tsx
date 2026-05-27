@@ -4,6 +4,7 @@ import GameControls from "./gameControls/gameControl";
 import GameLoadingScreen from "./GameLoadingScreen";
 import PeeStreamOverlay from "./pee-overlay/PeeStreamOverlay";
 import PooStreamOverlay from "./poo-overlay/PooStreamOverlay";
+import PhoneOverlay from "./phone-overlay/PhoneOverlay";
 import { AssetProvider } from "../../context/AssetContext";
 import { PixiRendererProvider } from "../../context/PixiRendererContext";
 
@@ -32,6 +33,7 @@ export default function GameWrapper({ onStart }: GameWrapperProps) {
           {/* Invisible — drives bonus animations onto the PIXI canvas */}
           <PeeStreamOverlay />
           <PooStreamOverlay />
+          <PhoneOverlay />
           <GameControls
             onBetClick={() => pixiActions.triggerFlush()}
             onAutoplayClick={() => pixiActions.triggerAutoplay()}

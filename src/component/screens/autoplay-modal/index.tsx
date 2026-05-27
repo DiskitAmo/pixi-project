@@ -25,7 +25,8 @@ export default function AutoplayModal({
   onClose,
   onStart,
 }: AutoplayModalProps) {
-  const { betAmount, setBetAmount, currentRisk, startAutoplay } = useFlushStore();
+  const { betAmount, setBetAmount, currentRisk, startAutoplay } =
+    useFlushStore();
 
   // Seed from current store values so modal always opens in sync with the game
   const [riskIndex, setRiskIndex] = useState(() => {

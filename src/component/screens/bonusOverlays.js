@@ -453,6 +453,5 @@ export function createBonusOverlays({ app, container }) {
     stopBonusMusic,
     showBonusAnnouncement,
     showWinnerZoom,
-    showPhoneAnimation,
   };
 }
