@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useFlushStore } from "../../store/useRoyalFlushStore";
 import LoaderScreen from "./loadingScreen/LoaderScreen";
 import GameControls from "./gameControls/gameControl";
@@ -7,13 +8,26 @@ import PooStreamOverlay from "./poo-overlay/PooStreamOverlay";
 import PhoneOverlay from "./phone-overlay/PhoneOverlay";
 import { AssetProvider } from "../../context/AssetContext";
 import { PixiRendererProvider } from "../../context/PixiRendererContext";
+import { useGameScale } from "../../hooks/useGameScale";
 
 interface GameWrapperProps {
   onStart: () => void;
 }
 
 export default function GameWrapper({ onStart }: GameWrapperProps) {
+  // Apply uniform CSS scale to #app so the game fits any viewport size
+  // while always looking like the 400×700 base design.
+  useGameScale();
+
   const gamePhase = useFlushStore((s) => s.gamePhase);
+
+  // Re-apply scale on every phase transition (loader → video → game)
+  // so layout shifts during phase changes don't leave stale dimensions.
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+  }, [gamePhase]);
   const pixiActions = useFlushStore((s) => s.pixiActions);
   const setGamePhase = useFlushStore((s) => s.setGamePhase);
 

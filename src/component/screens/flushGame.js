@@ -161,7 +161,7 @@ export async function createFlushScreen(app, onVideoEnd) {
 
     let renderHeight;
     let renderWidth;
-    const isMobile = app.screen.width < 768;
+    const isMobile = window.innerWidth < 768;
     if (isMobile) {
       renderHeight = canvasH * 0.6;
       renderWidth = renderHeight * imgRatio;
@@ -180,7 +180,7 @@ export async function createFlushScreen(app, onVideoEnd) {
   function resizeWater() {
     const canvasW = app.screen.width;
     const canvasH = app.screen.height;
-    const isMobile = canvasW < 768;
+    const isMobile = window.innerWidth < 768;
 
     centerX = canvasW / 2;
     // align water centre with the seat centre so it always sits inside the bowl
@@ -199,7 +199,7 @@ export async function createFlushScreen(app, onVideoEnd) {
     resizeSeat(); // sets seat.y — must run before resizeWater
     resizeWater(); // uses seat.y for centerY
 
-    const isMobile = app.screen.width < 768;
+    const isMobile = window.innerWidth < 768;
 
     multiplierUI.container.x = app.screen.width / 2;
     multiplierUI.container.y = seat.y;

@@ -24,7 +24,9 @@ function toggleMusic() {
 }
 
 (async () => {
-  await app.init({ background: "#000", resizeTo: window });
+  // resizeTo: #app (not window) so PixiJS measures the logical dimensions
+  // set by the inline scale script in index.html — CSS transform handles the visual scale-down.
+  await app.init({ background: "#000", resizeTo: document.getElementById("app") });
   document.getElementById("pixi-canvas").appendChild(app.canvas);
 
   mountApp(() => showVideo());
