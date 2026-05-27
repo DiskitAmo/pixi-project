@@ -122,7 +122,8 @@ export function usePhoneAnimation({
       const particlesContainer = renderer?.particlesContainer;
 
       if (phoneRef.current) {
-        if (particlesContainer) particlesContainer.removeChild(phoneRef.current);
+        if (particlesContainer)
+          particlesContainer.removeChild(phoneRef.current);
         phoneRef.current.destroy();
         phoneRef.current = null;
       }

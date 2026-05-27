@@ -121,7 +121,13 @@ export const useFlushStore = create<FlushState>((set) => ({
   announcingBonus: false,
   announcingBonusType: null,
 
-  rendererState: { app: null, maxRadius: 200, particlesContainer: null, centerX: 0, centerY: 0 },
+  rendererState: {
+    app: null,
+    maxRadius: 200,
+    particlesContainer: null,
+    centerX: 0,
+    centerY: 0,
+  },
   setRendererState: (state) => set({ rendererState: state }),
 
   /* ================================

@@ -6,21 +6,29 @@ import { usePhoneAnimation } from "../../../hooks/usePhoneAnimation";
 import styles from "./PhoneInHandOverlay.module.css";
 
 // ─── Timing constants (ms) ────────────────────────────────────────────────────
-const FRAMES = [ASSETS.PHONE_IN_HAND_1, ASSETS.PHONE_IN_HAND_2, ASSETS.PHONE_IN_HAND_3];
+const FRAMES = [
+  ASSETS.PHONE_IN_HAND_1,
+  ASSETS.PHONE_IN_HAND_2,
+  ASSETS.PHONE_IN_HAND_3,
+];
 
-const T_ENTER = 500;          // hand slides up
-const T_CROSSFADE = 200;      // frame 2→3 crossfade during exit
-const T_CROSSFADE_FAST = 80;  // frame 1→2 swap mid-swing
-const T_HOLD = 600;           // pause at top before exit
-const T_EXIT = 500;           // hand slides back down
+const T_ENTER = 500; // hand slides up
+const T_CROSSFADE = 200; // frame 2→3 crossfade during exit
+const T_CROSSFADE_FAST = 80; // frame 1→2 swap mid-swing
+const T_HOLD = 600; // pause at top before exit
+const T_EXIT = 500; // hand slides back down
 
 const AT_START = 10;
 const AT_SWAP_1_2 = AT_START + 420;
 const AT_EXIT_START = AT_START + T_ENTER + T_HOLD; // 1110ms
-const AT_TRIGGER_FLUSH = AT_EXIT_START + 120;       // 1230ms — PixiJS orbit starts
+const AT_TRIGGER_FLUSH = AT_EXIT_START + 120; // 1230ms — PixiJS orbit starts
 
 // ─── Stage 1: HTML/CSS hand animation ────────────────────────────────────────
-function PhoneInHand({ onSequenceComplete }: { onSequenceComplete: () => void }) {
+function PhoneInHand({
+  onSequenceComplete,
+}: {
+  onSequenceComplete: () => void;
+}) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
 
@@ -49,27 +57,35 @@ function PhoneInHand({ onSequenceComplete }: { onSequenceComplete: () => void })
     fade(imgRefs.current[2], 0, 0);
 
     // Slide UP
-    timers.push(setTimeout(() => {
-      slide("15%", T_ENTER, "cubic-bezier(0.22, 1, 0.36, 1)");
-    }, AT_START));
+    timers.push(
+      setTimeout(() => {
+        slide("15%", T_ENTER, "cubic-bezier(0.22, 1, 0.36, 1)");
+      }, AT_START),
+    );
 
     // Mid-swing: swap frame 1 → 2
-    timers.push(setTimeout(() => {
-      fade(imgRefs.current[0], 0, T_CROSSFADE_FAST);
-      fade(imgRefs.current[1], 1, T_CROSSFADE_FAST);
-    }, AT_SWAP_1_2));
+    timers.push(
+      setTimeout(() => {
+        fade(imgRefs.current[0], 0, T_CROSSFADE_FAST);
+        fade(imgRefs.current[1], 1, T_CROSSFADE_FAST);
+      }, AT_SWAP_1_2),
+    );
 
     // Slide DOWN + swap frame 2 → 3
-    timers.push(setTimeout(() => {
-      slide("110%", T_EXIT, "cubic-bezier(0.64, 0, 0.78, 0)");
-      fade(imgRefs.current[1], 0, T_CROSSFADE);
-      fade(imgRefs.current[2], 1, T_CROSSFADE);
-    }, AT_EXIT_START));
+    timers.push(
+      setTimeout(() => {
+        slide("110%", T_EXIT, "cubic-bezier(0.64, 0, 0.78, 0)");
+        fade(imgRefs.current[1], 0, T_CROSSFADE);
+        fade(imgRefs.current[2], 1, T_CROSSFADE);
+      }, AT_EXIT_START),
+    );
 
     // Hand has exited — kick off PixiJS orbit
-    timers.push(setTimeout(() => {
-      onSequenceComplete();
-    }, AT_TRIGGER_FLUSH));
+    timers.push(
+      setTimeout(() => {
+        onSequenceComplete();
+      }, AT_TRIGGER_FLUSH),
+    );
 
     return () => timers.forEach(clearTimeout);
   }, [onSequenceComplete]);
@@ -80,7 +96,9 @@ function PhoneInHand({ onSequenceComplete }: { onSequenceComplete: () => void })
         {FRAMES.map((src, i) => (
           <img
             key={src}
-            ref={(el) => { imgRefs.current[i] = el; }}
+            ref={(el) => {
+              imgRefs.current[i] = el;
+            }}
             src={src}
             alt={`Phone in hand ${i + 1}`}
             className={styles.phoneImage}
@@ -142,5 +160,7 @@ export default function PhoneInHandOverlay() {
 
   usePhoneAnimation({ enabled: orbitEnabled, onFinished: handleOrbitFinished });
 
-  return showHand ? <PhoneInHand onSequenceComplete={handleHandComplete} /> : null;
+  return showHand ? (
+    <PhoneInHand onSequenceComplete={handleHandComplete} />
+  ) : null;
 }

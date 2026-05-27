@@ -21,7 +21,10 @@ function applyScale() {
   const h = isMobileViewport && vp ? vp.height : window.innerHeight;
 
   const zoom = parseFloat(
-    Math.min(1, Math.max(MIN_ZOOM, Math.min(w / BASE_WIDTH, h / BASE_HEIGHT))).toFixed(2),
+    Math.min(
+      1,
+      Math.max(MIN_ZOOM, Math.min(w / BASE_WIDTH, h / BASE_HEIGHT)),
+    ).toFixed(2),
   );
 
   if (zoom < 1) {
