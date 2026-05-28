@@ -94,22 +94,28 @@ export function generateOutcome(currentRisk: RiskLevel): number {
 
   if (currentRisk === "low") {
     // Low Risk: max 50x
-    if (r < 0.89) return parseFloat((Math.random() * 2.5).toFixed(2));           // 0–2.5x   (no animation)
-    if (r < 0.97) return parseFloat((Math.random() * (7 - 3.5) + 3.5).toFixed(2)); // 3.5–7x  (pee)
-    return parseFloat((Math.random() * (50 - 10) + 10).toFixed(2));              // 10–50x   (poo)
+    if (r < 0.89) return parseFloat((Math.random() * 2.5).toFixed(2)); // 0–2.5x   (no animation)
+    if (r < 0.97)
+      return parseFloat((Math.random() * (7 - 3.5) + 3.5).toFixed(2)); // 3.5–7x  (pee)
+    return parseFloat((Math.random() * (50 - 10) + 10).toFixed(2)); // 10–50x   (poo)
   } else if (currentRisk === "high") {
     // High Risk: max 250x (higher variance)
-    if (r < 0.93)  return parseFloat((Math.random() * 5).toFixed(2));                    // 0–5x    (no animation)
-    if (r < 0.97)  return parseFloat((Math.random() * (12.5 - 7.5) + 7.5).toFixed(2));  // 7.5–12.5x (pee)
-    if (r < 0.99)  return parseFloat((Math.random() * (35 - 20) + 20).toFixed(2));       // 20–35x  (poo)
-    if (r < 0.998) return parseFloat((Math.random() * (80 - 50) + 50).toFixed(2));       // 50–80x  (phone)
-    return parseFloat((Math.random() * (250 - 125) + 125).toFixed(2));                   // 125–250x (plunger)
+    if (r < 0.93) return parseFloat((Math.random() * 5).toFixed(2)); // 0–5x    (no animation)
+    if (r < 0.97)
+      return parseFloat((Math.random() * (12.5 - 7.5) + 7.5).toFixed(2)); // 7.5–12.5x (pee)
+    if (r < 0.99)
+      return parseFloat((Math.random() * (35 - 20) + 20).toFixed(2)); // 20–35x  (poo)
+    if (r < 0.998)
+      return parseFloat((Math.random() * (80 - 50) + 50).toFixed(2)); // 50–80x  (phone)
+    return parseFloat((Math.random() * (250 - 125) + 125).toFixed(2)); // 125–250x (plunger)
   } else {
     // Medium Risk: max 100x (balanced)
-    if (r < 0.87)  return parseFloat((Math.random() * 3).toFixed(2));                  // 0–3x    (no animation)
-    if (r < 0.96)  return parseFloat((Math.random() * (7 - 5) + 5).toFixed(2));        // 5–7x    (pee)
-    if (r < 0.99)  return parseFloat((Math.random() * (20 - 10) + 10).toFixed(2));     // 10–20x  (poo)
-    if (r < 0.999) return parseFloat((Math.random() * (50 - 30) + 30).toFixed(2));     // 30–50x  (phone)
-    return parseFloat((Math.random() * (100 - 70) + 70).toFixed(2));                   // 70–100x (plunger)
+    if (r < 0.87) return parseFloat((Math.random() * 3).toFixed(2)); // 0–3x    (no animation)
+    if (r < 0.96) return parseFloat((Math.random() * (7 - 5) + 5).toFixed(2)); // 5–7x    (pee)
+    if (r < 0.99)
+      return parseFloat((Math.random() * (20 - 10) + 10).toFixed(2)); // 10–20x  (poo)
+    if (r < 0.999)
+      return parseFloat((Math.random() * (50 - 30) + 30).toFixed(2)); // 30–50x  (phone)
+    return parseFloat((Math.random() * (100 - 70) + 70).toFixed(2)); // 70–100x (plunger)
   }
 }
