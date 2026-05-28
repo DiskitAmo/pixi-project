@@ -37,7 +37,7 @@ export function usePooAnimation({ enabled, onFinished }: UsePooAnimationProps) {
     if (!isReady || !enabled || !pooTexture) return;
 
     const app = renderer!.app!;
-    const particlesContainer = renderer!.particlesContainer;
+    const particlesContainer = renderer!.bonusObjectsContainer;
     if (!particlesContainer) return;
 
     finishedRef.current = false;
@@ -134,7 +134,7 @@ export function usePooAnimation({ enabled, onFinished }: UsePooAnimationProps) {
   useEffect(() => {
     if (!enabled && pooRef.current) {
       const sprite = pooRef.current;
-      const particlesContainer = renderer?.particlesContainer;
+      const particlesContainer = renderer?.bonusObjectsContainer;
 
       if (particlesContainer) particlesContainer.removeChild(sprite);
       sprite.destroy();

@@ -19,6 +19,7 @@ export function PixiRendererProvider({
     app: null,
     maxRadius: 200,
     particlesContainer: null,
+    bonusObjectsContainer: null,
     centerX: 0,
     centerY: 0,
   }));
@@ -29,6 +30,7 @@ export function PixiRendererProvider({
   contextValue.app = storeState.app;
   contextValue.maxRadius = storeState.maxRadius;
   contextValue.particlesContainer = storeState.particlesContainer;
+  contextValue.bonusObjectsContainer = storeState.bonusObjectsContainer;
   contextValue.centerX = storeState.centerX;
   contextValue.centerY = storeState.centerY;
 

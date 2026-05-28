@@ -110,14 +110,6 @@ function PhoneInHand({
   );
 }
 
-// ─── Orchestrator ─────────────────────────────────────────────────────────────
-/**
- * Drives the two-stage phone bonus animation:
- *   1. <PhoneInHand>     — HTML/CSS hand slides up, frames swap, hand exits.
- *   2. usePhoneAnimation — PixiJS phone sprite spirals into the toilet bowl.
- *
- * Renders null when no phone bonus round is active.
- */
 export default function PhoneInHandOverlay() {
   const rounds = useFlushStore((s) => s.rounds);
 

@@ -1,15 +1,6 @@
-// SidebarUI.jsx
 import { useState } from "react";
 import styles from "./styles.module.css";
-import {
-  Menu,
-  X,
-  Info,
-  Volume2,
-  Music2,
-  Settings,
-  VolumeOff,
-} from "lucide-react";
+import SVGIcon from "../svg-icon";
 
 interface SidebarProps {
   onToggleMute: () => void;
@@ -33,14 +24,14 @@ export default function SidebarUI({ onToggleMute }: SidebarProps) {
       {!open && (
         <div className={styles.floatingButtons}>
           <button className={styles.circleButton} onClick={() => setOpen(true)}>
-            <Menu size={30} />
+            <SVGIcon name="menu" />
           </button>
 
           <button
             className={styles.circleButton}
             onClick={() => setInfoOpen(true)}
           >
-            <Info size={28} />
+            <SVGIcon name="info" />
           </button>
         </div>
       )}
@@ -52,19 +43,28 @@ export default function SidebarUI({ onToggleMute }: SidebarProps) {
             className={styles.circleButton}
             onClick={() => setOpen(false)}
           >
-            <X size={28} />
+            <SVGIcon name="closeIcon" />
           </button>
         </div>
 
         {/* Menu Items */}
         <div className={styles.menuItems}>
           <SidebarItem
-            icon={isMusicOn ? <Volume2 size={34} /> : <VolumeOff size={34} />}
+            icon={
+              isMusicOn ? (
+                <SVGIcon name="soundIcon" />
+              ) : (
+                <SVGIcon name="enableSoundIcon" />
+              )
+            }
             label="Soundfx"
             onclick={handleMusicToggle}
           />
-          <SidebarItem icon={<Music2 size={34} />} label="Music" />
-          <SidebarItem icon={<Settings size={34} />} label="Settings" />
+          <SidebarItem icon={<SVGIcon name="musicIcon" />} label="Music" />
+          <SidebarItem
+            icon={<SVGIcon name="settingsIcon" />}
+            label="Settings"
+          />
         </div>
       </div>
 
@@ -76,18 +76,13 @@ export default function SidebarUI({ onToggleMute }: SidebarProps) {
       {infoOpen && (
         <div className={styles.modalWrapper}>
           <div className={styles.modal}>
-            {/* Close */}
             <button
               className={styles.modalClose}
               onClick={() => setInfoOpen(false)}
             >
-              <X size={26} />
+              <SVGIcon name="closeIcon" />
             </button>
-
-            {/* Title */}
             <h2 className={styles.modalTitle}>ROYAL FLUSH</h2>
-
-            {/* Section */}
             <h3 className={styles.sectionTitle}>How to play</h3>
 
             <p className={styles.modalText}>
@@ -101,7 +96,6 @@ export default function SidebarUI({ onToggleMute }: SidebarProps) {
               habitasse vitae arcu et. Non gravida tristique ornare pharetra sit
               eget consequat.
             </p>
-
             <p className={styles.modalText}>
               Enim mollis commodo magna est dellend quis enim bandit. Placerat
               at sed ultrices auctor ultrices mi quis. Commodo faucibus placerat
@@ -110,9 +104,7 @@ export default function SidebarUI({ onToggleMute }: SidebarProps) {
               tellus auctor sit cursus diam.
             </p>
 
-            {/* Section */}
             <h3 className={styles.sectionTitle}>Payouts</h3>
-
             <p className={styles.modalText}>
               Placerat eu fermentum donec a duple aliquam ord diam scelerisque.
               Integer neque cursus arcu aliquam non proin molis. Tortor nibh sit

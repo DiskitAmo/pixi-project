@@ -37,7 +37,7 @@ export function usePhoneAnimation({
     if (!isReady || !enabled || !phoneTex) return;
 
     const app = renderer!.app!;
-    const particlesContainer = renderer!.particlesContainer;
+    const particlesContainer = renderer!.bonusObjectsContainer;
     if (!particlesContainer) return;
 
     finishedRef.current = false;
@@ -119,7 +119,7 @@ export function usePhoneAnimation({
   // Force-kill if the round is cancelled mid-animation
   useEffect(() => {
     if (!enabled) {
-      const particlesContainer = renderer?.particlesContainer;
+      const particlesContainer = renderer?.bonusObjectsContainer;
 
       if (phoneRef.current) {
         if (particlesContainer)

@@ -2,34 +2,8 @@ import { Sprite } from "pixi.js";
 import { useFlushStore } from "../../store/useRoyalFlushStore";
 import { BONUS_CONFIG } from "./bonusOverlays";
 import { FLOATER } from "../../lib/constants";
+import { generateOutcome } from "../utils/helper";
 
-/**
- * Creates the per-frame round-status handler used in the game ticker.
- *
- * Dependencies are injected via `ctx` so this module has no hidden
- * coupling to flushGame's closure scope.
- *
- * @param {object}                          ctx
- * @param {import("pixi.js").Application}   ctx.app
- * @param {import("pixi.js").Container}     ctx.container
- * @param {Map}                             ctx.activeSprites
- * @param {import("pixi.js").Sprite}        ctx.water
- * @param {import("pixi.js").Texture}       ctx.defaultWaterTex
- * @param {Set}                             ctx.delayedRounds
- * @param {Map}                             ctx.pendingBonusForRound
- * @param {Function}                        ctx.stopBonusMusic
- * @param {Function}                        ctx.showWinnerZoom
- * @param {{ container, update: Function }} ctx.multiplierUI
- * @param {import("@pixi/sound").sound}     ctx.sound
- * @param {Function}                        ctx.createSprinkleEffect
- * @param {Function}                        ctx.getParticleColor
- * @param {{ isLocked: boolean }}           ctx.lockState        - shared mutable lock flag
- * @param {() => { x: number, y: number }}  ctx.getCenter        - returns live center coords
- * @param {() => number}                    ctx.getMaxRadius     - returns live bowl radius (px)
- * @param {(id: string) => void}           [ctx.onRoundComplete] - called after full cleanup
- * @param {(id: string) => boolean}        [ctx.isAutoplayRound] - true when id is from autoplay
- * @returns {(round: object) => void}
- */
 export function createRoundStatusManager({
   app,
   container,
@@ -53,15 +27,17 @@ export function createRoundStatusManager({
   return function roundStatusManager(round) {
     const { x: centerX, y: centerY } = getCenter();
 
-    // ─── PENDING → create sprite and transition to spinning ───────────────────
+    //  PENDING - create sprite and transition to spinning
 
     if (round.status === "pending") {
       if (delayedRounds.has(round.roundId)) return;
 
       const pendingBonus = pendingBonusForRound.get(round.roundId) || "none";
+      const currentRisk = useFlushStore.getState().currentRisk;
+      const outcome = generateOutcome(currentRisk);
       useFlushStore
         .getState()
-        .startRound(round.roundId, Math.random() * 5 + 1, pendingBonus, null);
+        .startRound(round.roundId, outcome, pendingBonus, null);
 
       let obj;
 
@@ -69,22 +45,34 @@ export function createRoundStatusManager({
         // PEE BONUS: animation is handled by the usePeeStreamAnimation React hook
         // (PeeStreamOverlay component). Place a plain sentinel here so the
         // COMPLETED phase can still trigger winner-zoom and round cleanup.
-        obj = { isPeeBonus: true, isBonusHandled: false, isCompletedHandled: false };
+        obj = {
+          isPeeBonus: true,
+          isBonusHandled: false,
+          isCompletedHandled: false,
+        };
       } else if (pendingBonus === "poo") {
         // POO BONUS: animation is handled by the usePooAnimation React hook
         // (PooStreamOverlay component). Same sentinel pattern as pee.
-        obj = { isPooBonus: true, isBonusHandled: false, isCompletedHandled: false };
+        obj = {
+          isPooBonus: true,
+          isBonusHandled: false,
+          isCompletedHandled: false,
+        };
       } else if (pendingBonus === "phone") {
         // PHONE BONUS: animation is handled by the usePhoneAnimation React hook
         // (PhoneOverlay component). Same sentinel pattern as pee/poo.
-        obj = { isPhoneBonus: true, isBonusHandled: false, isCompletedHandled: false };
+        obj = {
+          isPhoneBonus: true,
+          isBonusHandled: false,
+          isCompletedHandled: false,
+        };
       } else {
-        // NORMAL / BONUS (plunger): orbiting sprite
+        // NORMAL : orbiting sprite
         obj = Sprite.from(round.texture);
         obj.anchor.set(0.5);
 
         // Scale sprite to fit the bowl — use live maxRadius so it adapts to
-        // mobile (smaller logical canvas) and desktop automatically.
+        // mobile and desktop automatically.
         const bowlRadius = getMaxRadius ? getMaxRadius() : 180;
         const isMobileNow = window.innerWidth < 768;
         const spriteSize = isMobileNow ? FLOATER.SIZE_MOBILE : FLOATER.SIZE;
@@ -95,8 +83,7 @@ export function createRoundStatusManager({
         // Keep orbit inside the visual bowl on all screen sizes.
         // Mobile  (maxRadius ≈ 222): 0.55× ≈ 122px — fits inside inner rim.
         // Desktop (maxRadius ≈ 208 at base 400×700): 0.85× ≈ 177px ≈ old 180.
-        // Cap at 180 so large desktop screens (maxRadius 400–500px) don't send
-        // objects flying outside the toilet seat image.
+        // Cap at 180 so large desktop screens (maxRadius 400–500px)
         obj.orbitRadius = isMobileNow
           ? bowlRadius * 0.55
           : Math.min(bowlRadius * 0.85, 180);
@@ -105,7 +92,8 @@ export function createRoundStatusManager({
         // Random self-rotation direction and speed per object
         obj.rotationSpeed =
           FLOATER.ROTATION_SPEED_MIN +
-          Math.random() * (FLOATER.ROTATION_SPEED_MAX - FLOATER.ROTATION_SPEED_MIN);
+          Math.random() *
+            (FLOATER.ROTATION_SPEED_MAX - FLOATER.ROTATION_SPEED_MIN);
         obj.x = centerX + Math.cos(obj.orbitAngle) * obj.orbitRadius;
         obj.y = centerY + Math.sin(obj.orbitAngle) * obj.orbitRadius;
 
@@ -115,7 +103,7 @@ export function createRoundStatusManager({
       activeSprites.set(round.roundId, obj);
     }
 
-    // ─── SPINNING → animate towards center ────────────────────────────────────
+    // SPINNING - animate towards center
 
     if (round.status === "spinning") {
       const obj = activeSprites.get(round.roundId);
@@ -143,7 +131,7 @@ export function createRoundStatusManager({
       }
     }
 
-    // ─── BONUS → pee display window done, brief hold then complete ────────────
+    // BONUS - pee display window done, brief hold then complete
 
     if (round.status === "bonus") {
       const obj = activeSprites.get(round.roundId);
@@ -165,7 +153,7 @@ export function createRoundStatusManager({
       }, 1500);
     }
 
-    // ─── COMPLETED → show result then clean up ────────────────────────────────
+    // COMPLETED - show result then clean up
 
     if (round.status === "completed") {
       const obj = activeSprites.get(round.roundId);

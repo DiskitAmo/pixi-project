@@ -4,7 +4,7 @@ import { ASSETS } from "../../lib/constants";
 export async function createVideoScreen(app, onVideoEnd) {
   const container = new Container();
 
-  //  Pixi v8 correct way to load video + preload logo in parallel
+  // load video + preload logo in parallel
   const [texture] = await Promise.all([
     Assets.load({
       src: ASSETS.INTRO_VIDEO,

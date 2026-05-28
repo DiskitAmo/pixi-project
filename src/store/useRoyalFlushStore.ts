@@ -37,6 +37,7 @@ export interface RendererState {
   app: Application | null;
   maxRadius: number;
   particlesContainer: Container | null;
+  bonusObjectsContainer: Container | null;
   /** Live bowl-centre coordinates (differ from screen centre on mobile). */
   centerX: number;
   centerY: number;
@@ -125,6 +126,7 @@ export const useFlushStore = create<FlushState>((set) => ({
     app: null,
     maxRadius: 200,
     particlesContainer: null,
+    bonusObjectsContainer: null,
     centerX: 0,
     centerY: 0,
   },

@@ -83,9 +83,9 @@ export function usePeeStreamAnimation({
     animationStateRef.current = {
       angle: Math.random() * Math.PI * 2,
       flowAngle: Math.random() * Math.PI * 2,
-      swingSpeed: 0.02 + Math.random() * 0.01,
+      swingSpeed: 0.04 + Math.random() * 0.02,
       swingAmplitude: initMaxRadius * (0.35 + Math.random() * 0.15),
-      flowWobble: 0.03 + Math.random() * 0.015,
+      flowWobble: 0.06 + Math.random() * 0.02,
       directionBias: (Math.random() - 0.5) * 0.6,
       baseHeight: stream.height,
       animationStartTime: Date.now(),

@@ -16,13 +16,11 @@ interface GameWrapperProps {
 
 export default function GameWrapper({ onStart }: GameWrapperProps) {
   // Apply uniform CSS scale to #app so the game fits any viewport size
-  // while always looking like the 400×700 base design.
   useGameScale();
 
   const gamePhase = useFlushStore((s) => s.gamePhase);
 
   // Re-apply scale on every phase transition (loader → video → game)
-  // so layout shifts during phase changes don't leave stale dimensions.
   useEffect(() => {
     requestAnimationFrame(() => {
       window.dispatchEvent(new Event("resize"));
@@ -44,7 +42,6 @@ export default function GameWrapper({ onStart }: GameWrapperProps) {
     return (
       <AssetProvider>
         <PixiRendererProvider>
-          {/* Invisible — drives bonus animations onto the PIXI canvas */}
           <PeeStreamOverlay />
           <PooStreamOverlay />
           <PhoneInHandOverlay />

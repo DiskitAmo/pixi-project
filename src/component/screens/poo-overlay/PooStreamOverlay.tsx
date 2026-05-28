@@ -4,9 +4,8 @@ import { useFlushStore } from "../../../store/useRoyalFlushStore";
 import { usePooAnimation } from "../../../hooks/usePooAnimation";
 
 /**
- * Invisible component that drives the poo animation onto the PIXI canvas.
+ * component that drives the poo animation onto the PIXI canvas.
  * Renders nothing to the DOM — all visuals are drawn by usePooAnimation.
- *
  * enabled    = a poo bonus round is currently in "spinning" status
  * onFinished → triggerBonus moves the round from spinning → bonus phase
  */

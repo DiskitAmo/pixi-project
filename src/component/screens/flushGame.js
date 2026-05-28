@@ -19,32 +19,34 @@ import {
   BONUS_CONFIG,
   createBonusOverlays,
 } from "./bonusOverlays";
-import { resizeBackground } from "../utils/helper";
-import { ASSETS, SOUNDS, FLUSHING_ITEM_SOURCES } from "../../lib/constants";
+import {
+  resizeBackground,
+  getRandomFlushObject,
+  getParticleColor,
+  createSprinkleEffect,
+  generateOutcome,
+} from "../utils/helper";
+import { ASSETS, SOUNDS } from "../../lib/constants";
 
 export async function createFlushScreen(app, onVideoEnd) {
   const container = new Container();
   // Allow zIndex-based sorting so announcement/winner overlays always
-  // render above sprinkle particles regardless of insertion order.
   container.sortableChildren = true;
 
   // Dedicated container for React-hook-driven particle effects (pee stream, etc.)
-  // Sits above game objects but below the seat/UI overlays.
   const particlesContainer = new Container();
-  particlesContainer.zIndex = 1008; // above multiplier (1007)
+  particlesContainer.zIndex = 1008; // above multiplier (96) — used by pee stream
   container.addChild(particlesContainer);
+
+  // Container for poo/phone orbit sprites — sits below the multiplier circle.
+  const bonusObjectsContainer = new Container();
+  bonusObjectsContainer.zIndex = 50; // below multiplier (96)
+  container.addChild(bonusObjectsContainer);
 
   let centerX = window.innerWidth / 2;
   let centerY = window.innerHeight / 2;
   let maxRadius = Math.min(window.innerWidth, window.innerHeight) * 0.48;
   let isMobile = window.innerWidth < 768;
-  // console.log("Is mobile:", isMobile);
-  function getRandomFlushObject() {
-    const randomIndex = Math.floor(
-      Math.random() * FLUSHING_ITEM_SOURCES.length,
-    );
-    return FLUSHING_ITEM_SOURCES[randomIndex];
-  }
 
   const bg = Sprite.from(ASSETS.BACKGROUND_IMG);
   container.addChild(bg);
@@ -83,18 +85,18 @@ export async function createFlushScreen(app, onVideoEnd) {
     // centerX / centerY are set by resizeWater() — do NOT override here
     // so mobile offset (seat-aligned Y) is preserved every frame
 
-    // ===== BOWL MASK (MAIN CLIP) =====
+    // BOWL MASK
     bowlMask.clear();
     bowlMask.beginFill(0xffffff);
     bowlMask.drawCircle(centerX, centerY, maxRadius);
     bowlMask.endFill();
 
-    // ===== WATER =====
+    // WATER
     water.x = centerX;
     water.y = centerY;
     water.rotation = vortexAngle;
 
-    // IMPORTANT: size = diameter
+    // size = diameter
     water.width = maxRadius * 2;
     water.height = maxRadius * 2;
 
@@ -107,24 +109,21 @@ export async function createFlushScreen(app, onVideoEnd) {
   //end of vortex code
 
   //tiolet seat
-
   const seat = Sprite.from(ASSETS.TOILET_SEAT);
   seat.anchor.set(0.5);
   seat.x = app.screen.width / 2;
   seat.y = app.screen.height / 2;
-  // seat.x = app.screen.width;
-  //seat.y = app.screen.height;
   container.addChild(seat);
   resizeSeat();
 
   function drawMask() {
-    const bounds = seat.getBounds(); // 🔥 get actual seat position
+    const bounds = seat.getBounds(); // get actual seat position
 
     const centerX = bounds.x + bounds.width / 2;
     const centerY = bounds.y + bounds.height / 2;
 
-    const radiusX = bounds.width * 0.22; // tweak this
-    const radiusY = bounds.height * 0.28; // tweak this
+    const radiusX = bounds.width * 0.22;
+    const radiusY = bounds.height * 0.28;
 
     bowlMask.clear();
     bowlMask.beginFill(0xffffff);
@@ -196,8 +195,8 @@ export async function createFlushScreen(app, onVideoEnd) {
 
   function resizeScene() {
     resizeBackground(app, bg);
-    resizeSeat(); // sets seat.y — must run before resizeWater
-    resizeWater(); // uses seat.y for centerY
+    resizeSeat();
+    resizeWater();
 
     const isMobile = window.innerWidth < 768;
 
@@ -209,9 +208,14 @@ export async function createFlushScreen(app, onVideoEnd) {
     // maxRadius and the bowl-centre coordinates change on every resize —
     // pushing them here means the hooks read the latest values from their
     // stable renderer ref without restarting the animation effect.
-    useFlushStore
-      .getState()
-      .setRendererState({ app, maxRadius, particlesContainer, centerX, centerY });
+    useFlushStore.getState().setRendererState({
+      app,
+      maxRadius,
+      particlesContainer,
+      bonusObjectsContainer,
+      centerX,
+      centerY,
+    });
   }
 
   resizeScene();
@@ -222,7 +226,11 @@ export async function createFlushScreen(app, onVideoEnd) {
     stopBonusMusic,
     showBonusAnnouncement,
     showWinnerZoom,
-  } = createBonusOverlays({ app, container, getCenter: () => ({ x: centerX, y: centerY }) });
+  } = createBonusOverlays({
+    app,
+    container,
+    getCenter: () => ({ x: centerX, y: centerY }),
+  });
 
   function triggerFlush(isAutoplay = false) {
     const roundId = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -231,12 +239,7 @@ export async function createFlushScreen(app, onVideoEnd) {
     // Bonuses are disabled for medium risk — autoplay rounds are also always normal.
     flushCount++;
     const currentRisk = useFlushStore.getState().currentRisk;
-    console.log(
-      currentRisk,
-      flushCount,
-      nextBonusAt,
-      "flush count / next bonus at",
-    );
+
     let bonusType = null;
     if (!isAutoplay && currentRisk !== "medium" && flushCount >= nextBonusAt) {
       bonusType = BONUS_TYPES[Math.floor(Math.random() * BONUS_TYPES.length)];
@@ -298,14 +301,6 @@ export async function createFlushScreen(app, onVideoEnd) {
     });
   });
 
-  function rotateFlush() {
-    flushOverlay.rotation -= 0.1;
-  }
-
-  function getRandomMultiplier() {
-    return (Math.random() * 5 + 1).toFixed(2) + "x";
-  }
-
   // Shared mutable lock flag — passed into createRoundStatusManager so the
   // handler can set/clear it, and read here by the multiplier ticker.
   const lockState = { isLocked: false };
@@ -320,7 +315,8 @@ export async function createFlushScreen(app, onVideoEnd) {
     const hasPlacedBet = useFlushStore.getState().hasPlacedFirstBet;
 
     if (!lockState.isLocked && hasPlacedBet && now - lastUpdate > 200) {
-      const randomValue = Math.random() * 50 + 1;
+      const currentRisk = useFlushStore.getState().currentRisk;
+      const randomValue = generateOutcome(currentRisk);
 
       multiplierUI.update(randomValue);
 
@@ -328,65 +324,7 @@ export async function createFlushScreen(app, onVideoEnd) {
     }
   });
 
-  function createSprinkleEffect(x, y, color = 0x3b82f6) {
-    const particles = [];
-
-    for (let i = 0; i < 20; i++) {
-      const particle = new Graphics();
-
-      particle.beginFill(color);
-      particle.drawCircle(0, 0, Math.random() * 4 + 2);
-      particle.endFill();
-
-      particle.x = x;
-      particle.y = y;
-
-      // random direction
-      particle.vx = (Math.random() - 0.5) * 12;
-      particle.vy = (Math.random() - 0.5) * 12;
-
-      particle.alpha = 1;
-      particle.zIndex = 1009; // above multiplier (1007) and particles container (1008)
-
-      container.addChild(particle);
-
-      particles.push(particle);
-    }
-
-    const tickerFn = () => {
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        p.alpha -= 0.03;
-
-        p.scale.x *= 0.98;
-        p.scale.y *= 0.98;
-      });
-
-      // remove dead particles
-      if (particles[0]?.alpha <= 0) {
-        particles.forEach((p) => {
-          container.removeChild(p);
-          p.destroy();
-        });
-
-        app.ticker.remove(tickerFn);
-      }
-    };
-
-    app.ticker.add(tickerFn);
-  }
-
-  function getParticleColor(multiplier) {
-    if (multiplier < 3) return 0xa855f7;
-
-    if (multiplier < 25) return 0x3b82f6;
-
-    return 0xeab308;
-  }
-
-  // ─── Autoplay tracker ────────────────────────────────────────────────────────
+  // Autoplay tracker-
   // Tracks which rounds belong to the current autoplay batch.
   // When a batch finishes naturally, a new batch starts immediately so flushing
   // continues until the user explicitly presses Stop.
@@ -446,7 +384,7 @@ export async function createFlushScreen(app, onVideoEnd) {
     showWinnerZoom,
     multiplierUI,
     sound,
-    createSprinkleEffect,
+    createSprinkleEffect: (x, y, color) => createSprinkleEffect(app, container, x, y, color),
     getParticleColor,
     lockState,
     getCenter: () => ({ x: centerX, y: centerY }),

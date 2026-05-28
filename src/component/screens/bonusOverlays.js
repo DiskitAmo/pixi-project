@@ -35,15 +35,6 @@ export const BONUS_CONFIG = {
   },
 };
 
-/**
- * Creates the bonus overlay helpers (announcement banner + background music).
- *
- * @param {object}                        ctx
- * @param {import("pixi.js").Application} ctx.app       - PixiJS app instance
- * @param {import("pixi.js").Container}   ctx.container - scene container
- * @param {() => {x:number, y:number}}    ctx.getCenter - returns live bowl-centre coords
- * @returns {{ showBonusAnnouncement, playBonusMusic, stopBonusMusic }}
- */
 export function createBonusOverlays({ app, container, getCenter }) {
   // Background music
 
@@ -56,11 +47,6 @@ export function createBonusOverlays({ app, container, getCenter }) {
 
   let activeBonusSoundName = null;
 
-  /**
-   * Starts the looping background music for the given bonus type.
-   * Stops any currently playing bonus music first.
-   * @param {string} type - one of the BONUS_TYPES keys
-   */
   function playBonusMusic(type) {
     stopBonusMusic();
 
@@ -78,9 +64,7 @@ export function createBonusOverlays({ app, container, getCenter }) {
     });
   }
 
-  /**
-   * Stops the currently playing bonus background music, if any.
-   */
+  // Stops the currently playing bonus background music, if any.
   function stopBonusMusic() {
     if (activeBonusSoundName) {
       sound.stop(activeBonusSoundName);
@@ -89,14 +73,6 @@ export function createBonusOverlays({ app, container, getCenter }) {
   }
 
   // Announcement banner
-
-  /**
-   * Displays the bonus announcement image centred over the toilet for 3 s,
-   * then removes it and calls onDone.
-   *
-   * @param {string}   bonusType - one of the BONUS_TYPES keys
-   * @param {Function} onDone    - callback fired after the banner is removed
-   */
   function showBonusAnnouncement(bonusType, onDone) {
     const config = BONUS_CONFIG[bonusType];
     const overlay = Sprite.from(config.announcement);
@@ -125,7 +101,7 @@ export function createBonusOverlays({ app, container, getCenter }) {
     overlay.zIndex = 1010; // above multiplier (1007) and bonus animations (1008)
     container.addChild(overlay);
 
-    // ── Shake / wobble while the announcement is visible ──────────────────
+    // Shake / wobble while the announcement is visible
     // Two sine waves at different frequencies give an organic, non-mechanical feel.
     const baseX = cx;
     const baseY = cy;
@@ -155,15 +131,6 @@ export function createBonusOverlays({ app, container, getCenter }) {
     return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
   }
 
-  /**
-   * Animates a zoom-in "WINNER" result card over the bowl centre.
-   * Zooms in (easeOutBack) → holds → fades out. Total ~1 750 ms.
-   *
-   * @param {number} multiplier  - final multiplier value
-   * @param {number} betAmount   - original bet amount
-   * @param {number} cx          - centre x (live)
-   * @param {number} cy          - centre y (live)
-   */
   function showWinnerZoom(multiplier, betAmount, cx, cy) {
     // On mobile the bowl occupies the top 60% of a smaller canvas —
     // scale the whole overlay down so it fits inside the inner toilet rim.
@@ -177,17 +144,21 @@ export function createBonusOverlays({ app, container, getCenter }) {
     winOverlay.alpha = 0;
     winOverlay.zIndex = 1010; // above multiplier (1007) and bonus animations (1008)
 
-    // Dark circle with gold border
+    // Resolve color from multiplier value — matches the multiplier UI thresholds
+    const colorHex = multiplier < 3 ? 0xa855f7 : multiplier < 25 ? 0x3b82f6 : 0xeab308;
+    const colorCss = multiplier < 3 ? "#a855f7" : multiplier < 25 ? "#3b82f6" : "#eab308";
+
+    // Dark circle with dynamic border
     const bg = new Graphics();
-    bg.lineStyle(5, 0xffd700, 1);
+    bg.lineStyle(5, colorHex, 1);
     bg.beginFill(0x071507, 0.85);
     bg.drawCircle(0, 0, 165);
     bg.endFill();
     winOverlay.addChild(bg);
 
-    // Inner gold ring accent
+    // Inner ring accent
     const ring = new Graphics();
-    ring.lineStyle(2, 0xffd700, 0.4);
+    ring.lineStyle(2, colorHex, 0.4);
     ring.drawCircle(0, 0, 150);
     winOverlay.addChild(ring);
 
@@ -207,12 +178,12 @@ export function createBonusOverlays({ app, container, getCenter }) {
     winnerLabel.y = -68;
     winOverlay.addChild(winnerLabel);
 
-    // Multiplier value (large, gold)
+    // Multiplier value
     const multText = new Text(`${multiplier.toFixed(2)}x`, {
       fontFamily: "Arial",
       fontSize: 72,
       fontWeight: "900",
-      fill: "#ffd700",
+      fill: colorCss,
       dropShadow: true,
       dropShadowColor: "#000000",
       dropShadowBlur: 10,

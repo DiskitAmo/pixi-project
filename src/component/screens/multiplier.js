@@ -36,7 +36,6 @@ export function createMultiplierUI(centerX, centerY) {
   });
 
   text.anchor.set(0.5);
-
   container.addChild(text);
 
   container.x = centerX;

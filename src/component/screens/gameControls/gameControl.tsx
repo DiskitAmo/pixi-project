@@ -1,5 +1,5 @@
 import { useFlushStore } from "../../../store/useRoyalFlushStore";
-import BetControls from "../bet-controls";
+import BetControls from "../bet-controls/BetControls";
 import Logo from "../logoContainer/Logo";
 import RiskSelector from "../riskSelector";
 import Sidebar from "../sidebar";
