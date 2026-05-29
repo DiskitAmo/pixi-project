@@ -76,7 +76,7 @@ export const ASSETS = {
   PLUNGER_RUSH: "/assets/plunger/plunger-rush.webp",
   PLUNGER: "/assets/plunger/plunger.png",
   ORANGE_WATER: "/assets/plunger/orange-water.webp",
-  PLUNGER_SUCCESS: "/assets/images/plunger/plunger-success.png",
+  PLUNGER_SUCCESS: "/assets/plunger/plunger-success.png",
 } as const;
 
 export const SOUNDS = {
@@ -124,6 +124,7 @@ export const PRELOAD_ASSETS: string[] = [
   // ── Plunger bonus ───────────────────────────────────────────────────────────
   ASSETS.PLUNGER_RUSH,
   ASSETS.PLUNGER,
+  ASSETS.PLUNGER_SUCCESS,
   ASSETS.ORANGE_WATER,
   // ── Sounds (BACKGROUND_SOUNDS uses native Audio — excluded) ─────────────────
   SOUNDS.FLUSH_SOUND,

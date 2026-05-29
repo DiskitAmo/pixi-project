@@ -81,7 +81,9 @@ export async function createFlushScreen(app, onVideoEnd) {
   //let bowlMaskParams = { cx: 0, cy: 0, rx: 100, ry: 120 };
 
   app.ticker.add(() => {
-    vortexAngle += 0.03;
+    if (!useFlushStore.getState().waterSpinPaused) {
+      vortexAngle += 0.03;
+    }
     // centerX / centerY are set by resizeWater() — do NOT override here
     // so mobile offset (seat-aligned Y) is preserved every frame
 

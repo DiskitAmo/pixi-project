@@ -6,6 +6,7 @@ import GameLoadingScreen from "./GameLoadingScreen";
 import PeeStreamOverlay from "./pee-overlay/PeeStreamOverlay";
 import PooStreamOverlay from "./poo-overlay/PooStreamOverlay";
 import PhoneInHandOverlay from "./phone-overlay/PhoneInHandOverlay";
+import PlungerRushOverlay from "./plunger-overlay/PlungerRushOverlay";
 import { AssetProvider } from "../../context/AssetContext";
 import { PixiRendererProvider } from "../../context/PixiRendererContext";
 import { useGameScale } from "../../hooks/useGameScale";
@@ -45,6 +46,7 @@ export default function GameWrapper({ onStart }: GameWrapperProps) {
           <PeeStreamOverlay />
           <PooStreamOverlay />
           <PhoneInHandOverlay />
+          <PlungerRushOverlay />
           <GameControls
             onBetClick={() => pixiActions.triggerFlush()}
             onAutoplayClick={() => pixiActions.triggerAutoplay()}

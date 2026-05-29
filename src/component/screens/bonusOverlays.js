@@ -4,7 +4,10 @@ import { ASSETS, BONUS_MODE } from "../../lib/constants";
 
 // Bonus type list
 
-export const BONUS_TYPES = ["pee", "poo", "phone"];
+export const BONUS_TYPES = [
+  //"pee", "poo", "phone"
+  "plunger",
+];
 
 // Per-bonus asset config
 
@@ -145,8 +148,10 @@ export function createBonusOverlays({ app, container, getCenter }) {
     winOverlay.zIndex = 1010; // above multiplier (1007) and bonus animations (1008)
 
     // Resolve color from multiplier value — matches the multiplier UI thresholds
-    const colorHex = multiplier < 3 ? 0xa855f7 : multiplier < 25 ? 0x3b82f6 : 0xeab308;
-    const colorCss = multiplier < 3 ? "#a855f7" : multiplier < 25 ? "#3b82f6" : "#eab308";
+    const colorHex =
+      multiplier < 3 ? 0xa855f7 : multiplier < 25 ? 0x3b82f6 : 0xeab308;
+    const colorCss =
+      multiplier < 3 ? "#a855f7" : multiplier < 25 ? "#3b82f6" : "#eab308";
 
     // Dark circle with dynamic border
     const bg = new Graphics();

@@ -66,6 +66,14 @@ export function createRoundStatusManager({
           isBonusHandled: false,
           isCompletedHandled: false,
         };
+      } else if (pendingBonus === "plunger") {
+        // PLUNGER BONUS: animation is handled by the usePlungerAnimation React hook
+        // (PlungerRushOverlay component). Same sentinel pattern as pee/poo/phone.
+        obj = {
+          isPlungerBonus: true,
+          isBonusHandled: false,
+          isCompletedHandled: false,
+        };
       } else {
         // NORMAL : orbiting sprite
         obj = Sprite.from(round.texture);
@@ -109,9 +117,8 @@ export function createRoundStatusManager({
       const obj = activeSprites.get(round.roundId);
       if (!obj) return;
 
-      if (obj.isPeeBonus || obj.isPooBonus || obj.isPhoneBonus) {
-        // Animation is fully managed by the React hook overlay (PhoneOverlay,
-        // PeeStreamOverlay, PooStreamOverlay). Do nothing here.
+      if (obj.isPeeBonus || obj.isPooBonus || obj.isPhoneBonus || obj.isPlungerBonus) {
+        // Animation is fully managed by the React hook overlay. Do nothing here.
         return;
       }
 
@@ -138,7 +145,7 @@ export function createRoundStatusManager({
       if (!obj || obj.isBonusHandled) return;
       obj.isBonusHandled = true;
 
-      if (obj.isPeeBonus || obj.isPooBonus || obj.isPhoneBonus) {
+      if (obj.isPeeBonus || obj.isPooBonus || obj.isPhoneBonus || obj.isPlungerBonus) {
         // Hook / animation already cleaned up; just advance the round after a brief hold.
         setTimeout(() => {
           useFlushStore.getState().completeRound(round.roundId);
@@ -160,9 +167,9 @@ export function createRoundStatusManager({
       if (!obj || obj.isCompletedHandled) return;
       obj.isCompletedHandled = true;
 
-      // pee/poo/phone sentinels have no PIXI sprite — skip property mutations
+      // pee/poo/phone/plunger sentinels have no PIXI sprite — skip property mutations
       // that only apply to real Sprite objects.
-      if (!obj.isPeeBonus && !obj.isPooBonus && !obj.isPhoneBonus) {
+      if (!obj.isPeeBonus && !obj.isPooBonus && !obj.isPhoneBonus && !obj.isPlungerBonus) {
         obj.rotation = 0;
       }
 
@@ -200,7 +207,7 @@ export function createRoundStatusManager({
         }
 
         // Only remove from the PIXI container if this was a real sprite
-        if (!obj.isPeeBonus && !obj.isPooBonus && !obj.isPhoneBonus) {
+        if (!obj.isPeeBonus && !obj.isPooBonus && !obj.isPhoneBonus && !obj.isPlungerBonus) {
           container.removeChild(obj);
         }
 

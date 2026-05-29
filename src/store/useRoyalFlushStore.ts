@@ -70,6 +70,9 @@ interface FlushState {
   announcingBonus: boolean;
   announcingBonusType: FlushBonusType | null;
 
+  waterSpinPaused: boolean;
+  setWaterSpinPaused: (paused: boolean) => void;
+
   rendererState: RendererState;
   setRendererState: (state: RendererState) => void;
 
@@ -121,6 +124,9 @@ export const useFlushStore = create<FlushState>((set) => ({
 
   announcingBonus: false,
   announcingBonusType: null,
+
+  waterSpinPaused: false,
+  setWaterSpinPaused: (paused) => set({ waterSpinPaused: paused }),
 
   rendererState: {
     app: null,
