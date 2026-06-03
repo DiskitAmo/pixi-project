@@ -73,9 +73,14 @@ export async function createFlushScreen(app, onVideoEnd) {
   let vortexAngle = 0;
 
   let flushCount = 0;
-  let nextBonusAt = 6 + Math.floor(Math.random() * 2);
+  let nextBonusAt = 5 + Math.floor(Math.random() * 4); // adjusted per mode after each bonus
   const pendingBonusForRound = new Map(); // roundId → bonusType, lives until round cleanup
   const delayedRounds = new Set(); // rounds blocked until announcement finishes
+
+  // Autoplay bonus interval — bonus is only allowed once every 3–5 batches.
+  // Between those batches every round is a normal object.
+  let autoBatchCount = 0;
+  let nextBonusAtBatch = 3 + Math.floor(Math.random() * 3); // 3, 4, or 5
 
   // Shared bowl mask params — updated on resize, read in ticker
   //let bowlMaskParams = { cx: 0, cy: 0, rx: 100, ry: 120 };
@@ -234,7 +239,7 @@ export async function createFlushScreen(app, onVideoEnd) {
     getCenter: () => ({ x: centerX, y: centerY }),
   });
 
-  function triggerFlush(isAutoplay = false) {
+  function spawnRound(isAutoplay = false) {
     const roundId = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
     // Decide if this flush triggers a bonus.
@@ -243,11 +248,25 @@ export async function createFlushScreen(app, onVideoEnd) {
     const currentRisk = useFlushStore.getState().currentRisk;
 
     let bonusType = null;
-    if (!isAutoplay && currentRisk !== "medium" && flushCount >= nextBonusAt) {
+    // Only allow a new bonus if no bonus is already pending or currently active.
+    const bonusAlreadyQueued = pendingBonusForRound.size > 0;
+    const bonusAlreadyActive = Object.values(useFlushStore.getState().rounds).some(
+      (r) => r.status === "bonus"
+    );
+    if (
+      currentRisk !== "medium" &&
+      flushCount >= nextBonusAt &&
+      !bonusAlreadyQueued &&
+      !bonusAlreadyActive
+    ) {
       bonusType = BONUS_TYPES[Math.floor(Math.random() * BONUS_TYPES.length)];
       pendingBonusForRound.set(roundId, bonusType);
       flushCount = 0;
-      nextBonusAt = 2 + Math.floor(Math.random() * 2);
+      // Normal flush: 5–8 objects before next bonus
+      // Autoplay: 20–30 objects (~6–9 seconds at 300 ms/object)
+      nextBonusAt = isAutoplay
+        ? 20 + Math.floor(Math.random() * 11)
+        : 5 + Math.floor(Math.random() * 4);
     }
 
     if (bonusType) {
@@ -326,52 +345,43 @@ export async function createFlushScreen(app, onVideoEnd) {
     }
   });
 
-  // Autoplay tracker-
-  // Tracks which rounds belong to the current autoplay batch.
-  // When a batch finishes naturally, a new batch starts immediately so flushing
-  // continues until the user explicitly presses Stop.
+  function handleNormalFlushRoundComplete(_roundId) {}
+  function isNormalFlushRound(_roundId) { return false; }
 
-  let autoplayRoundIds = new Set(); // IDs still in flight
-  let autoplayPendingLaunches = 0; // setTimeouts not yet fired
+  // ── Autoplay ──────────────────────────────────────────────────────────────
+  // Continuously spawns one object every 300 ms while isAuto is true.
+  // No batching, no waiting — bonus fires mid-stream and objects already
+  // spiraling keep going while the bonus animation plays.
 
-  function checkAutoplayComplete() {
-    if (autoplayPendingLaunches > 0) return; // still staggering launches
-    if (autoplayRoundIds.size > 0) return; // rounds still spiraling
-    if (!useFlushStore.getState().isAuto) return; // user pressed STOP
+  let autoplayInterval = null;
 
-    // Batch finished naturally — immediately start the next one
-    triggerAutoplay();
-  }
+  function handleAutoplayRoundComplete(_roundId) {}
 
-  function handleAutoplayRoundComplete(roundId) {
-    if (!autoplayRoundIds.has(roundId)) return;
-    autoplayRoundIds.delete(roundId);
-    checkAutoplayComplete();
-  }
-
-  function isAutoplayRound(roundId) {
-    return autoplayRoundIds.has(roundId);
+  function isAutoplayRound(_roundId) {
+    return useFlushStore.getState().isAuto;
   }
 
   function triggerAutoplay() {
-    const count = 3 + Math.floor(Math.random() * 5); // 3 – 7 objects
-    autoplayRoundIds = new Set();
-    autoplayPendingLaunches = count;
-
-    for (let i = 0; i < count; i++) {
-      setTimeout(() => {
-        if (!useFlushStore.getState().isAuto) {
-          // Autoplay was stopped before this launch fired — just count it off
-          autoplayPendingLaunches--;
-          checkAutoplayComplete();
-          return;
-        }
-        const roundId = triggerFlush(true);
-        if (roundId) autoplayRoundIds.add(roundId);
-        autoplayPendingLaunches--;
-        checkAutoplayComplete();
-      }, i * 300);
-    }
+    if (autoplayInterval) return;
+    autoBatchCount++;
+    spawnRound(true); // first object immediately
+    autoplayInterval = setInterval(() => {
+      if (!useFlushStore.getState().isAuto) {
+        clearInterval(autoplayInterval);
+        autoplayInterval = null;
+        return;
+      }
+      // Do not spawn normal objects while any bonus is announcing, running, or completing
+      const state = useFlushStore.getState();
+      const bonusBusy =
+        state.announcingBonus ||
+        pendingBonusForRound.size > 0 ||
+        Object.values(state.rounds).some(
+          (r) => r.status === "bonus" || (r.status === "completed" && r.bonusType !== "none")
+        );
+      if (bonusBusy) return;
+      spawnRound(true);
+    }, 300);
   }
 
   const roundStatusManager = createRoundStatusManager({
@@ -391,9 +401,13 @@ export async function createFlushScreen(app, onVideoEnd) {
     lockState,
     getCenter: () => ({ x: centerX, y: centerY }),
     getMaxRadius: () => maxRadius,
-    onRoundComplete: handleAutoplayRoundComplete,
+    onRoundComplete: (_roundId) => {},
     isAutoplayRound,
   });
+
+  function triggerFlush() {
+    spawnRound(false);
+  }
 
   return { container, triggerFlush, triggerAutoplay };
 }

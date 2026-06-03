@@ -178,10 +178,16 @@ export function usePlungerAnimation({
         sprite.y = PIVOT_Y;
 
         if (elapsed >= SUCCESS_MS) {
-          // Swap back to normal plunger then immediately slide down
+          // Multiplier circle radius matches multiplier.js values
+          const multRadius = isMobile ? 65 : 110;
+          // Cup lands exactly at the top edge of the multiplier circle
+          const cupTargetExitY = cy - multRadius;
           sprite.texture = plungerTex;
           sprite.width = plungerH * (plungerTex.width / plungerTex.height);
           sprite.height = plungerH;
+          sprite.anchor.set(0.5, 1);
+          sprite.x = cx;
+          sprite.y = cupTargetExitY + plungerH;
           phase = "exit";
           phaseStart = now;
         }
@@ -190,9 +196,10 @@ export function usePlungerAnimation({
       } else if (phase === "exit") {
         const t = Math.min(elapsed / EXIT_MS, 1);
         const eased = t * t;
-        const startY = PIVOT_Y;
+        const multRadius = isMobile ? 65 : 110;
+        const startY = cy - multRadius + plungerH;
         const endY = isMobile
-          ? cy + maxRadius * 2.5
+          ? cy + maxRadius * 2.5 + plungerH
           : app.screen.height + plungerH;
 
         sprite.x = cx;

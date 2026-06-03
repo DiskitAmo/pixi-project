@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { GAME_SETTINGS } from "../../../lib/constants";
+import { X } from "lucide-react";
+import { GAME_SETTINGS, ASSETS } from "../../../lib/constants";
 import {
   useFlushStore,
   type RiskLevel,
 } from "../../../store/useRoyalFlushStore";
 import styles from "./styles.module.css";
 
-const risks: { label: string; value: RiskLevel; color: string }[] = [
-  { label: "LOW", value: "low", color: "#a855f7" },
-  { label: "MED", value: "medium", color: "#3b82f6" },
-  { label: "HIGH", value: "high", color: "#eab308" },
+const risks: { label: string; value: RiskLevel }[] = [
+  { label: "LOW", value: "low" },
+  { label: "MED", value: "medium" },
+  { label: "HIGH", value: "high" },
 ];
 
 const MIN_PLAYS = 1;
@@ -28,17 +28,12 @@ export default function AutoplayModal({
   const { betAmount, setBetAmount, currentRisk, startAutoplay } =
     useFlushStore();
 
-  // Seed from current store values so modal always opens in sync with the game
   const [riskIndex, setRiskIndex] = useState(() => {
     const idx = risks.findIndex((r) => r.value === currentRisk);
     return idx >= 0 ? idx : 0;
   });
   const [localBet, setLocalBet] = useState(betAmount);
   const [selectedPlays, setSelectedPlays] = useState(10);
-
-  const changeRisk = (dir: number) => {
-    setRiskIndex((prev) => (prev + dir + risks.length) % risks.length);
-  };
 
   const changeBet = (dir: number) => {
     setLocalBet((prev) => {
@@ -57,35 +52,40 @@ export default function AutoplayModal({
     onClose();
   };
 
-  const { color } = risks[riskIndex];
   const progressPct =
     ((selectedPlays - MIN_PLAYS) / (MAX_PLAYS - MIN_PLAYS)) * 100;
 
   return (
     <div className={styles.backdrop} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className={styles.header}>
-          <span className={styles.title}>AUTOPLAY</span>
-          <button className={styles.closeBtn} onClick={onClose}>
-            <X size={18} />
-          </button>
-        </div>
+        {/* Background image */}
+        <img src={ASSETS.BACKGROUND_IMG} alt="" className={styles.bgImg} />
+        {/* Dark tint over bg */}
+        <div className={styles.bgTint} />
 
-        {/* Risk Selector */}
+        {/* Close button */}
+        <button className={styles.closeBtn} onClick={onClose}>
+          <X size={18} />
+        </button>
+
+        {/* Title */}
+        <h2 className={styles.title}>
+          AUTOPLAY<br />SETTINGS
+        </h2>
+
+        {/* Risk Level */}
         <div className={styles.section}>
-          <span className={styles.label}>RISK</span>
-          <div className={styles.riskRow} style={{ borderColor: color, color }}>
-            <button
-              className={styles.chevronBtn}
-              onClick={() => changeRisk(-1)}
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <span className={styles.riskLabel}>{risks[riskIndex].label}</span>
-            <button className={styles.chevronBtn} onClick={() => changeRisk(1)}>
-              <ChevronRight size={20} />
-            </button>
+          <span className={styles.label}>RISK LEVEL</span>
+          <div className={styles.riskRow}>
+            {risks.map((r, i) => (
+              <button
+                key={r.value}
+                className={`${styles.riskBtn} ${i === riskIndex ? styles.riskBtnActive : ""}`}
+                onClick={() => setRiskIndex(i)}
+              >
+                {r.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -96,7 +96,10 @@ export default function AutoplayModal({
             <button className={styles.roundBtn} onClick={() => changeBet(-1)}>
               −
             </button>
-            <span className={styles.betValue}>${localBet.toFixed(2)}</span>
+            <div className={styles.betInput}>
+              <span className={styles.dollarSign}>$</span>
+              <span className={styles.betValue}>{localBet.toFixed(1)}</span>
+            </div>
             <button className={styles.roundBtn} onClick={() => changeBet(1)}>
               +
             </button>
@@ -105,24 +108,21 @@ export default function AutoplayModal({
 
         {/* Number of Plays */}
         <div className={styles.section}>
-          <div className={styles.playsHeader}>
-            <span className={styles.label}>NUMBER OF PLAYS</span>
+          <span className={styles.label}>NUMBER OF PLAYS</span>
+          <div className={styles.sliderWrapper}>
+            <input
+              type="range"
+              min={MIN_PLAYS}
+              max={MAX_PLAYS}
+              value={selectedPlays}
+              onChange={(e) => setSelectedPlays(Number(e.target.value))}
+              className={styles.slider}
+              style={{
+                background: `linear-gradient(to right, #00ff00 0%, #00ff00 ${progressPct}%, #1c1c1c ${progressPct}%, #1c1c1c 100%)`,
+              }}
+            />
             <span className={styles.playsCount}>{selectedPlays}</span>
           </div>
-          <div className={styles.progressTrack}>
-            <div
-              className={styles.progressFill}
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-          <input
-            type="range"
-            min={MIN_PLAYS}
-            max={MAX_PLAYS}
-            value={selectedPlays}
-            onChange={(e) => setSelectedPlays(Number(e.target.value))}
-            className={styles.slider}
-          />
         </div>
 
         {/* Start Button */}
