@@ -12,16 +12,16 @@ const FRAMES = [
   ASSETS.PHONE_IN_HAND_3,
 ];
 
-const T_ENTER = 500;        // hand slides up
-const T_CROSSFADE = 200;    // frame crossfade duration
+const T_ENTER = 500; // hand slides up
+const T_CROSSFADE = 200; // frame crossfade duration
 const T_CROSSFADE_FAST = 80; // frame 1→2 swap mid-swing
-const T_HOLD = 800;         // pause at top before exit
-const T_EXIT = 1000;        // hand slides back down
+const T_HOLD = 800; // pause at top before exit
+const T_EXIT = 1000; // hand slides back down
 
 const AT_START = 10;
-const AT_SWAP_1_2 = AT_START + 420;                    //  430ms — frame 1→2 mid-swing
-const AT_SHOW_FRAME_3 = AT_START + T_ENTER + 250;      //  760ms — frame 2→3 while still at top
-const AT_EXIT_START = AT_START + T_ENTER + T_HOLD;     // 1310ms — slide back down
+const AT_SWAP_1_2 = AT_START + 420; //  430ms — frame 1→2 mid-swing
+const AT_SHOW_FRAME_3 = AT_START + T_ENTER + 250; //  760ms — frame 2→3 while still at top
+const AT_EXIT_START = AT_START + T_ENTER + T_HOLD; // 1310ms — slide back down
 const AT_TRIGGER_FLUSH = AT_EXIT_START + T_EXIT - 100; // PixiJS orbit starts near end of slide
 
 // ─── Stage 1: HTML/CSS hand animation ────────────────────────────────────────

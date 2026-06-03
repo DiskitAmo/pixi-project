@@ -8,19 +8,19 @@ import { ASSETS, BONUS_MODE } from "../lib/constants";
 import { useFlushStore } from "../store/useRoyalFlushStore";
 import { useMobileDetect } from "./useMobileDetect";
 
-// ─── Timing ──────────────────────────────────────────────────────────────────
-const ENTRY_MS   = 600;
-const SWING_MS   = 7500;
+// ─── Timing
+const ENTRY_MS = 600;
+const SWING_MS = 12000;
 const SUCCESS_MS = 2500;
-const EXIT_MS    = 600;
+const EXIT_MS = 600;
 
 interface SwingState {
-  angle:     number;
+  angle: number;
   flowAngle: number;
 }
 
 interface UsePlungerAnimationProps {
-  enabled:    boolean;
+  enabled: boolean;
   onFinished: () => void;
 }
 
@@ -28,20 +28,20 @@ export function usePlungerAnimation({
   enabled,
   onFinished,
 }: UsePlungerAnimationProps) {
-  const renderer     = usePixiRenderer();
+  const renderer = usePixiRenderer();
   const { isMobile } = useMobileDetect();
 
-  const spriteRef   = useRef<PIXI.Sprite | null>(null);
-  const tickerRef   = useRef<(() => void) | null>(null);
+  const spriteRef = useRef<PIXI.Sprite | null>(null);
+  const tickerRef = useRef<(() => void) | null>(null);
   const finishedRef = useRef(false);
-  const swingRef    = useRef<SwingState | null>(null);
+  const swingRef = useRef<SwingState | null>(null);
 
   const isReady = !!renderer?.app;
 
   useEffect(() => {
     if (!isReady || !enabled) return;
 
-    const app       = renderer!.app!;
+    const app = renderer!.app!;
     const container = renderer!.particlesContainer;
     if (!container) return;
 
@@ -59,85 +59,94 @@ export function usePlungerAnimation({
 
     finishedRef.current = false;
 
-    // ── Size ─────────────────────────────────────────────────────────────────
-    const screenH  = app.screen.height;
-    const screenW  = app.screen.width;
-    // Fill most of the screen height so the plunger looks large and imposing
-    const plungerH = isMobile ? screenH * 0.75 : screenH * 0.9;
-    const plungerW = plungerH * (plungerTex.width / plungerTex.height);
+    // ── Size
+    const screenH = app.screen.height;
+    const screenW = app.screen.width;
+    const cy = renderer!.centerY || screenH / 2;
+    const maxRadius = renderer!.maxRadius || 200;
+
+    // On mobile the toilet bowl occupies only the upper portion of the canvas.
+    // Anchor pivot and cup target relative to the actual bowl position so the
+    // plunger enters from just below the bowl, not the full screen bottom.
+    const cupTargetY = isMobile ? cy - maxRadius * 0.6 : screenH * 0.1;
+    const PIVOT_Y_INIT = isMobile ? cy + maxRadius * 1.3 : screenH * 1.5;
+    const plungerH = PIVOT_Y_INIT - cupTargetY;
+    const naturalW = plungerH * (plungerTex.width / plungerTex.height);
+    // Cap width so the cup stays inside the toilet seat
+    const maxW = screenW * (isMobile ? 0.55 : 0.45);
+    const plungerW = Math.min(naturalW, maxW);
 
     // Anchor at bottom-centre so the handle tip is the rotation pivot
     const sprite = new PIXI.Sprite(plungerTex);
     sprite.anchor.set(0.5, 1);
-    sprite.width  = plungerW;
+    sprite.width = plungerW;
     sprite.height = plungerH;
 
-    // Start off-screen below
-    sprite.x     = renderer!.centerX || screenW / 2;
-    sprite.y     = screenH + plungerH;
+    // Start off-screen — on mobile start just below the bowl, on desktop below the full screen
+    const entryStartY = isMobile ? cy + maxRadius * 2.5 : screenH + plungerH;
+    sprite.x = renderer!.centerX || screenW / 2;
+    sprite.y = entryStartY;
     sprite.alpha = 0;
     container.addChild(sprite);
     spriteRef.current = sprite;
 
     useFlushStore.getState().setWaterSpinPaused(true);
 
-    // ── Phase state ───────────────────────────────────────────────────────────
+    // ── Phase state
     type Phase = "entry" | "swing" | "success" | "exit";
-    let phase: Phase  = "entry";
-    let phaseStart    = performance.now();
-    const entryFromY  = sprite.y;
+    let phase: Phase = "entry";
+    let phaseStart = performance.now();
+    const entryFromY = sprite.y;
 
-    // Pivot Y — slightly below canvas bottom so the handle appears rooted there
-    const PIVOT_Y = screenH * 1.1;
+    const PIVOT_Y = PIVOT_Y_INIT;
 
-    // ── Ticker ────────────────────────────────────────────────────────────────
+    // ── Ticker
     const tick = () => {
       if (finishedRef.current) return;
 
-      const now     = performance.now();
+      const now = performance.now();
       const elapsed = now - phaseStart;
 
       const cx = renderer!.centerX || app.screen.width / 2;
-      const cy = renderer!.centerY  || app.screen.height / 2;
 
-      // ── Entry: slide up ──────────────────────────────────────────────────
+      // ── Entry: slide up
       if (phase === "entry") {
-        const t     = Math.min(elapsed / ENTRY_MS, 1);
+        const t = Math.min(elapsed / ENTRY_MS, 1);
         const eased = 1 - Math.pow(1 - t, 3);
 
-        sprite.x        = cx;
-        sprite.y        = entryFromY + (PIVOT_Y - entryFromY) * eased;
-        sprite.alpha    = t;
+        sprite.x = cx;
+        sprite.y = entryFromY + (PIVOT_Y - entryFromY) * eased;
+        sprite.alpha = t;
         sprite.rotation = 0;
 
         if (t >= 1) {
           swingRef.current = { angle: 0, flowAngle: 0 };
-          phase      = "swing";
+          phase = "swing";
           phaseStart = now;
         }
 
-      // ── Swing: pee-stream style (rotation + height variation) ────────────
+        // ── Swing: pee-stream style (rotation + height variation)
       } else if (phase === "swing") {
         const s = swingRef.current!;
 
-        s.angle     += BONUS_MODE.PLUNGER_SWING_SPEED;
+        s.angle += BONUS_MODE.PLUNGER_SWING_SPEED;
         s.flowAngle += 0.025;
 
         const swingProgress = elapsed / SWING_MS;
-        const decay         = 1 - swingProgress * 0.6; // settle toward the end
+        const decay = 1 - swingProgress * 0.6; // settle toward the end
 
         // Height variation  — bobs the rubber-cup up/down through the bowl
         const heightVar = 0.15 + Math.sin(s.angle * 0.7) * 0.1;
-        const dynH      = plungerH * (1 + Math.sin(s.angle * 1.5) * heightVar);
+        const dynH = plungerH * (1 + Math.sin(s.angle * 1.5) * heightVar);
 
         // Pivot locked at PIVOT_Y — only rotation changes, no x drift
-        sprite.x        = cx;
-        sprite.y        = PIVOT_Y;
-        sprite.height   = dynH;
+        sprite.x = cx;
+        sprite.y = PIVOT_Y;
+        sprite.height = dynH;
         sprite.rotation =
           Math.sin(s.angle) * BONUS_MODE.PLUNGER_SWING_AMPLITUDE * decay +
           Math.sin(s.flowAngle * 2) * 0.04 * decay; // small wobble
-        sprite.alpha    = 1;
+        sprite.alpha = 1;
 
         // Transition when time is up AND plunger is near vertical (cup over drain)
         const nearCentre = Math.abs(Math.sin(s.angle)) < 0.15;
@@ -149,40 +158,46 @@ export function usePlungerAnimation({
           if (successTex) {
             sprite.texture = successTex;
             // Fill the same height as the swinging plunger
-            sprite.width  = plungerH * (successTex.width / successTex.height);
+            sprite.width = plungerH * (successTex.width / successTex.height);
             sprite.height = plungerH;
           }
 
           sprite.x = cx;
-          sprite.y = app.screen.height + plungerH * 0.12;   // shifted slightly below screen bottom
+          sprite.y = PIVOT_Y;
           sprite.alpha = 1;
 
           useFlushStore.getState().setWaterSpinPaused(false);
 
-          phase      = "success";
+          phase = "success";
           phaseStart = now;
         }
 
-      // ── Success ──────────────────────────────────────────────────────────
+        // ── Success
       } else if (phase === "success") {
         sprite.x = cx;
-        sprite.y = app.screen.height + plungerH * 0.12;   // shifted slightly below screen bottom
+        sprite.y = PIVOT_Y;
 
         if (elapsed >= SUCCESS_MS) {
-          phase      = "exit";
+          // Swap back to normal plunger then immediately slide down
+          sprite.texture = plungerTex;
+          sprite.width = plungerH * (plungerTex.width / plungerTex.height);
+          sprite.height = plungerH;
+          phase = "exit";
           phaseStart = now;
         }
 
-      // ── Exit: slide back down ────────────────────────────────────────────
+        // ── Exit: slide back down
       } else if (phase === "exit") {
-        const t     = Math.min(elapsed / EXIT_MS, 1);
+        const t = Math.min(elapsed / EXIT_MS, 1);
         const eased = t * t;
-        const startY = app.screen.height;
-        const endY   = app.screen.height + plungerH;
+        const startY = PIVOT_Y;
+        const endY = isMobile
+          ? cy + maxRadius * 2.5
+          : app.screen.height + plungerH;
 
-        sprite.x     = cx;
-        sprite.y     = startY + (endY - startY) * eased;
-        sprite.alpha = 1 - t;
+        sprite.x = cx;
+        sprite.y = startY + (endY - startY) * eased;
+        sprite.alpha = 1;
 
         if (t >= 1) {
           finishedRef.current = true;
@@ -221,7 +236,7 @@ export function usePlungerAnimation({
         spriteRef.current = null;
       }
       finishedRef.current = true;
-      swingRef.current    = null;
+      swingRef.current = null;
       if (tickerRef.current && renderer?.app) {
         renderer.app.ticker.remove(tickerRef.current);
         tickerRef.current = null;
