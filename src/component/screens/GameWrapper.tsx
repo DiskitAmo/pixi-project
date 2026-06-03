@@ -31,7 +31,9 @@ export default function GameWrapper({ onStart }: GameWrapperProps) {
   const setGamePhase = useFlushStore((s) => s.setGamePhase);
 
   const handleLoaderComplete = () => {
-    setGamePhase("video");
+    // Switch to videoLoading so the bg stays visible (no blank flash)
+    // while main.js awaits createVideoScreen. main.js sets "video" when ready.
+    setGamePhase("videoLoading");
     onStart();
   };
 
@@ -57,11 +59,12 @@ export default function GameWrapper({ onStart }: GameWrapperProps) {
     );
   }
 
-  // "loading" phase — assets loading, show bg to avoid black flash
-  if (gamePhase === "loading") {
+  // "videoLoading" — video is being fetched; keep bg visible, no buttons
+  // "loading" — game assets loading after video ends; keep bg visible
+  if (gamePhase === "videoLoading" || gamePhase === "loading") {
     return <GameLoadingScreen />;
   }
 
-  // "video" phase — Pixi handles the screen, React shows nothing
+  // "video" phase — Pixi canvas is showing the video, React shows nothing
   return null;
 }

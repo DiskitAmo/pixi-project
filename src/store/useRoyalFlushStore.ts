@@ -31,7 +31,12 @@ export interface FlushRound {
   winAmount: number;
 }
 
-export type GamePhase = "loader" | "video" | "loading" | "game";
+export type GamePhase =
+  | "loader"
+  | "videoLoading"
+  | "video"
+  | "loading"
+  | "game";
 
 export interface RendererState {
   app: Application | null;

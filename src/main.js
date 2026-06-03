@@ -52,6 +52,10 @@ async function showVideo() {
   // All assets are already cached by LoaderScreen — no preload needed here.
   currentScreen = await createVideoScreen(app, () => flushGame());
 
+  // Video is loaded and about to play — NOW drop the React bg overlay so
+  // it doesn't cover the Pixi canvas. Setting "video" renders null in React.
+  useFlushStore.getState().setGamePhase("video");
+
   app.stage.addChild(currentScreen);
 }
 

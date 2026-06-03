@@ -70,7 +70,9 @@ export default function AutoplayModal({
 
         {/* Title */}
         <h2 className={styles.title}>
-          AUTOPLAY<br />SETTINGS
+          AUTOPLAY
+          <br />
+          SETTINGS
         </h2>
 
         {/* Risk Level */}
