@@ -1,4 +1,4 @@
-import { Application } from "pixi.js";
+import { Application, Container } from "pixi.js";
 import { createVideoScreen } from "./component/screens/introVideo.js";
 import { createFlushScreen } from "./component/screens/flushGame.js";
 import { mountApp } from "./App.tsx";
@@ -46,17 +46,17 @@ function clearScreen() {
 }
 
 async function showVideo() {
-  // Start BG music only when the user explicitly clicks START GAME
   bgMusic.play().catch(() => {});
 
-  // All assets are already cached by LoaderScreen — no preload needed here.
-  currentScreen = await createVideoScreen(app, () => flushGame());
+  // createVideoScreen now returns the container SYNCHRONOUSLY via a ref,
+  // then populates it async. We add it to stage before awaiting.
+  const { container, ready } = createVideoScreen(app, () => flushGame());
 
-  // Video is loaded and about to play — NOW drop the React bg overlay so
-  // it doesn't cover the Pixi canvas. Setting "video" renders null in React.
+  currentScreen = container;
+  app.stage.addChild(currentScreen); // instant — shows black bg
+
+  await ready; // wait for video to be ready to play
   useFlushStore.getState().setGamePhase("video");
-
-  app.stage.addChild(currentScreen);
 }
 
 async function flushGame() {
