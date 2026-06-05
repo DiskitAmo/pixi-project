@@ -409,5 +409,41 @@ export async function createFlushScreen(app, onVideoEnd) {
     spawnRound(false);
   }
 
-  return { container, triggerFlush, triggerAutoplay };
+  function triggerBonusPreview(type) {
+    const state = useFlushStore.getState();
+    const bonusBusy =
+      state.announcingBonus ||
+      pendingBonusForRound.size > 0 ||
+      Object.values(state.rounds).some(
+        (r) => r.status === "bonus" || (r.status === "completed" && r.bonusType !== "none")
+      );
+    if (bonusBusy) return;
+
+    const roundId = `preview-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const config = BONUS_CONFIG[type];
+
+    if (type === "pee") {
+      flushOverlay.texture = Assets.get(config.objectFrames[0]);
+    } else {
+      flushOverlay.texture = Assets.get(config.object);
+    }
+
+    pendingBonusForRound.set(roundId, type);
+    flushCount = 0;
+    nextBonusAt = 5 + Math.floor(Math.random() * 4);
+
+    useFlushStore.getState().addRound(roundId, useFlushStore.getState().betAmount, flushOverlay.texture);
+    useFlushStore.getState().setAnnouncingBonus(true, type);
+    playBonusMusic(type);
+    delayedRounds.add(roundId);
+    showBonusAnnouncement(type, () => {
+      const bonusWater = Assets.get(config.water);
+      if (bonusWater) water.texture = bonusWater;
+      delayedRounds.delete(roundId);
+    });
+
+    sound.play("flushSound");
+  }
+
+  return { container, triggerFlush, triggerAutoplay, triggerBonusPreview };
 }

@@ -52,6 +52,7 @@ export interface PixiActions {
   triggerFlush: () => void;
   triggerAutoplay: () => void;
   toggleMusic: () => void;
+  triggerBonusPreview: (type: string) => void;
 }
 
 interface FlushState {

@@ -4,10 +4,7 @@ import { ASSETS, BONUS_MODE } from "../../lib/constants";
 
 // Bonus type list
 
-export const BONUS_TYPES = [
-  //"pee", "poo", "phone"
-  "plunger",
-];
+export const BONUS_TYPES = ["pee", "poo", "phone", "plunger"];
 
 // Per-bonus asset config
 

@@ -1,0 +1,56 @@
+.panel {
+  position: relative;
+  display: inline-block;
+  pointer-events: auto;
+}
+
+.trigger {
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+  font-family: "ClashDisplay", sans-serif;
+  letter-spacing: 1.5px;
+}
+
+.trigger:hover {
+  background: rgba(40, 40, 40, 0.85);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: rgba(10, 10, 10, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  min-width: 130px;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+.item {
+  display: block;
+  width: 100%;
+  padding: 9px 14px;
+  background: transparent;
+  color: #fff;
+  border: none;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.12s;
+  font-family: "ClashDisplay", sans-serif;
+  letter-spacing: 1.5px;
+}
+
+.item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}

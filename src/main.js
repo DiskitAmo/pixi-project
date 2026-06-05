@@ -72,13 +72,14 @@ async function flushGame() {
     return;
   }
 
-  const { container, triggerFlush, triggerAutoplay } = result;
+  const { container, triggerFlush, triggerAutoplay, triggerBonusPreview } = result;
 
   // Register Pixi callbacks in the store — GameWrapper picks them up reactively
   useFlushStore.getState().setPixiActions({
     triggerFlush: () => triggerFlush(),
     triggerAutoplay: () => triggerAutoplay(),
     toggleMusic,
+    triggerBonusPreview: (type) => triggerBonusPreview(type),
   });
 
   // Signal React that the game is ready — UIOverlay will now render
