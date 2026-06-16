@@ -1,0 +1,75 @@
+.riskBoxWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 6px;
+  border: 2px solid;
+  border-radius: 10px;
+  text-align: center;
+  min-width: 88px;
+}
+
+.riskLabel {
+  font-size: 10px;
+  color: #fff;
+}
+
+.riskValue {
+  font-size: 16px;
+}
+
+.riskBtn {
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  animation: 2s ease-in-out infinite smallBounce;
+  display: flex;
+  align-items: center;
+}
+
+.riskBtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.riskBtn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+  animation: none;
+}
+
+.riskBoxDisabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+@keyframes smallBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.wrapper p {
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    order: 2;
+    transform: scale(0.8);
+  }
+  .riskBoxWrapper {
+    min-width: unset;
+    width: max-content;
+  }
+}
