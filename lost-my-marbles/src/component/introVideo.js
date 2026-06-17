@@ -55,7 +55,7 @@ export function createVideoScreen(app, onVideoEnd) {
 
     resizeVideo();
 
-    const logo = Sprite.from(ASSETS.LOGO_SVG);
+    const logo = new Sprite(Assets.get(ASSETS.LOGO_SVG));
     logo.anchor.set(0.5);
     logo.scale.set(0.4);
     logo.x = app.screen.width / 2;

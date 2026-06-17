@@ -82,7 +82,7 @@ export default function SidebarUI({ onToggleMute }: SidebarProps) {
             >
               <SVGIcon name="closeIcon" />
             </button>
-            <h2 className={styles.modalTitle}>ROYAL FLUSH</h2>
+            <h2 className={styles.modalTitle}>LOST MY MARBLES</h2>
             <h3 className={styles.sectionTitle}>How to play</h3>
 
             <p className={styles.modalText}>

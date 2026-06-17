@@ -1,6 +1,5 @@
-import type { AnyTextStyleOptions } from "pixi.js";
 import styles from "./styles.module.css";
-// import { ChevronLeft, ChevronRight } from "lucide-react";
+import SVGIcon from "../svg-icon/SVGIcon";
 
 // import {
 //   selectCanPlaceBet,
@@ -32,7 +31,7 @@ export default function GameControls() {
   // const currentRisk = useFlushStore((s) => s.currentRisk);
   // const setRisk = useFlushStore((s) => s.setRisk);
   // const canBet = useFlushStore(selectCanPlaceBet);
-  const disabled = !false;
+  const disabled = false;
 
   //const riskIndex = STORE_TO_INDEX[currentRisk] ?? 0;
   const riskIndex = 0;
@@ -54,7 +53,7 @@ export default function GameControls() {
           onClick={() => changeRisk(-1)}
           disabled={disabled}
         >
-          {/* <ChevronLeft /> */}
+          <SVGIcon name="leftArrow" />
         </button>
         <div className={styles.riskBox}>
           <div className={styles.riskLabel}>RISK</div>
@@ -67,7 +66,7 @@ export default function GameControls() {
           onClick={() => changeRisk(1)}
           disabled={disabled}
         >
-          {/* <ChevronRight /> */}
+          <SVGIcon name="rightArrow" />
         </button>
       </div>
     </div>

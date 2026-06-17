@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import LoaderScreen from "./loadingScreen/LoaderScreen";
-import GameControls from "./gameControls/gameControl";
-import { AssetProvider } from "../context/AssetContext";
-import { PixiRendererProvider } from "../context/PixiRendererContext";
+import UIOverlay from "./gameControls/gameControl";
 
 interface GameWrapperProps {
   onStart: () => void;
+  onRegisterGameStart: (fn: () => void) => void;
 }
 
-export default function GameWrapper({ onStart }: GameWrapperProps) {
+export default function GameWrapper({ onStart, onRegisterGameStart }: GameWrapperProps) {
   const [gamePhase, setGamePhase] = useState<"loader" | "video" | "game">("loader");
+
+  // Register synchronously on first render so main.js can call it at any point after mount
+  const registered = useRef(false);
+  if (!registered.current) {
+    registered.current = true;
+    onRegisterGameStart(() => setGamePhase("game"));
+  }
 
   if (gamePhase === "loader") {
     return (
@@ -24,24 +30,14 @@ export default function GameWrapper({ onStart }: GameWrapperProps) {
 
   if (gamePhase === "game") {
     return (
-      <AssetProvider>
-        <PixiRendererProvider>
-          <GameControls
-            onBetClick={() => ""}
-            onAutoplayClick={() => ""}
-            onToggleMute={() => ""}
-          />
-        </PixiRendererProvider>
-      </AssetProvider>
+      <UIOverlay
+        onBetClick={() => {}}
+        onAutoplayClick={() => {}}
+        onToggleMute={() => {}}
+      />
     );
   }
 
-  // "videoLoading" — video is being fetched; keep bg visible, no buttons
-  // "loading" — game assets loading after video ends; keep bg visible
-  // if (gamePhase === "videoLoading" || gamePhase === "loading") {
-  //   return null;
-  // }
-
-  // "video" phase — Pixi canvas is showing the video, React shows nothing
+  // "video" phase — Pixi canvas plays the video, React shows nothing
   return null;
 }

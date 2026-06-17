@@ -30,10 +30,10 @@
   align-items: center;
 }
 
-.riskBtn svg {
+/* .riskBtn svg {
   width: 16px;
   height: 16px;
-}
+} */
 
 .riskBtn:disabled {
   opacity: 0.2;

@@ -31,14 +31,14 @@ const iconMap = {
   leftArrow: {
     icon: LeftArrow,
     viewBox: "0 0 20 20",
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
   },
   rightArrow: {
     icon: RightArrow,
     viewBox: "0 0 20 20",
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
   },
   playIcon: {
     icon: PlayIcon,

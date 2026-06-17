@@ -1,30 +1,16 @@
-import { Application, Container } from "pixi.js";
+import { Application } from "pixi.js";
 import { mountApp } from "./App.tsx";
 import { createVideoScreen } from "./component/introVideo.js";
-//import { useFlushStore } from "./store/useRoyalFlushStore.ts";
-import { SOUNDS } from "./lib/constants.ts";
-
+import { createMarbleGameScreen } from "./game/marbleGameScreen.js";
 import { initDevtools } from "@pixi/devtools";
 
 const app = new Application();
 initDevtools(app);
-let currentScreen;
 
-// const bgMusic = new Audio(SOUNDS.BACKGROUND_SOUNDS);
-// bgMusic.loop = true;
-// bgMusic.volume = 0.1;
-
-// function toggleMusic() {
-//   if (bgMusic.paused) {
-//     bgMusic.play();
-//   } else {
-//     bgMusic.pause();
-//   }
-// }
+let currentScreen = null;
+let triggerGamePhase = null; // registered by GameWrapper via onRegisterGameStart
 
 (async () => {
-  // resizeTo: #app (not window) so PixiJS measures the logical dimensions
-  // set by the inline scale script in index.html — CSS transform handles the visual scale-down.
   await app.init({
     background: "#000",
     resizeTo: document.getElementById("app"),
@@ -34,59 +20,36 @@ let currentScreen;
   });
   document.getElementById("pixi-canvas").appendChild(app.canvas);
 
-  mountApp(() => showVideo());
+  mountApp(
+    () => showVideo(),
+    (fn) => { triggerGamePhase = fn; },
+  );
 })();
 
 function clearScreen() {
   if (currentScreen) {
     app.stage.removeChild(currentScreen);
     currentScreen.destroy({ children: true });
+    currentScreen = null;
   }
 }
 
 async function showVideo() {
-  //bgMusic.play().catch(() => {});
-
-  // createVideoScreen now returns the container SYNCHRONOUSLY via a ref,
-  // then populates it async. We add it to stage before awaiting.
-  const { container, ready } = createVideoScreen(app, () =>
-    //flushGame()
-    {},
-  );
+  const { container, ready } = createVideoScreen(app, () => showGame());
 
   currentScreen = container;
-  app.stage.addChild(currentScreen); // instant — shows black bg
+  app.stage.addChild(currentScreen);
 
-  await ready; // wait for video to be ready to play
-  //useFlushStore.getState().setGamePhase("video");
+  await ready;
 }
 
-// async function flushGame() {
-//   clearScreen();
+async function showGame() {
+  clearScreen();
 
-//   // Show game bg immediately so there's no black flash while assets load
-//   useFlushStore.getState().setGamePhase("loading");
+  const screen = await createMarbleGameScreen(app);
+  currentScreen = screen;
+  app.stage.addChild(currentScreen);
 
-//   const result = await createFlushScreen(app);
-
-//   if (!result) {
-//     console.error("createFlushScreen returned nothing");
-//     return;
-//   }
-
-//   const { container, triggerFlush, triggerAutoplay, triggerBonusPreview } = result;
-
-//   // Register Pixi callbacks in the store — GameWrapper picks them up reactively
-//   useFlushStore.getState().setPixiActions({
-//     triggerFlush: () => triggerFlush(),
-//     triggerAutoplay: () => triggerAutoplay(),
-//     toggleMusic,
-//     triggerBonusPreview: (type) => triggerBonusPreview(type),
-//   });
-
-//   // Signal React that the game is ready — UIOverlay will now render
-//   useFlushStore.getState().setGamePhase("game");
-
-//   currentScreen = container;
-//   app.stage.addChild(currentScreen);
-// }
+  // Transition React overlay to game UI
+  triggerGamePhase?.();
+}

@@ -9,7 +9,7 @@ import { GAME_SETTINGS } from "../../lib/constants";
 //   useFlushStore,
 // } from "../../../store/useRoyalFlushStore";
 // import AutoplayModal from "../autoplay-modal";
-import BonusBadge from "../bonus-badge/BonusBadge";
+//import BonusBadge from "../bonus-badge/BonusBadge";
 
 //import { useGameStore, useMobileDetect } from '@wtfstudios/game-ui';
 
@@ -20,10 +20,12 @@ interface BetControlsProps {
   onAutoplayClick: () => void;
 }
 
-export default function BetControls({
-  onBetClick,
-  onAutoplayClick,
-}: BetControlsProps) {
+export default function BetControls(
+  {
+    // onBetClick,
+    // onAutoplayClick,
+  }: BetControlsProps,
+) {
   // const { betAmount, setBetAmount, isAuto, autoRemaining, stopAutoplay } =
   //   useFlushStore();
   // const balance = 0;
@@ -85,7 +87,8 @@ export default function BetControls({
 
   // const canBet = useFlushStore(selectCanPlaceBet);
 
-  const disabled = !false;
+  const disabled = false;
+  const isAuto = false;
 
   return (
     <>
@@ -100,7 +103,7 @@ export default function BetControls({
 
         <div className={styles.betContainer}>
           {/* Overlays the main button during bonus announcements */}
-          <BonusBadge />
+          {/* <BonusBadge /> */}
 
           <div className={styles.mainButtonOuter}>
             <div
@@ -109,9 +112,6 @@ export default function BetControls({
               }`}
             >
               <button
-                // onClick={() =>
-                //   isAuto ? stopAutoplay() : onBetClick(betAmount)
-                // }
                 disabled={disabled}
                 className={`${styles.mainButton} ${isAuto ? styles.mainButtonAuto : ""}`}
               >
