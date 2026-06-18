@@ -34,21 +34,20 @@ export default function UIOverlay({
       </div>
 
       <div className={styles.gameFooter}>
-        <RiskSelector />
-        <div className={styles.details}>
-          <p>
-            <span className={styles.riskSpan}>BET</span>${(22).toFixed(2)}
-          </p>
-          <p>
-            <span className={styles.riskSpan}>CREDIT</span>$2000.00
-          </p>
+        {/* Bottom-left */}
+        <div className={styles.footerLeft}>
+          <RiskSelector />
+          <div className={styles.details}>
+            <p><span className={styles.riskSpan}>BET</span>$1.00</p>
+            <p><span className={styles.riskSpan}>CREDIT</span>$10,001.50</p>
+          </div>
         </div>
+
+        {/* Bottom-right */}
         <BetControls
           onBetClick={onBetClick}
           onAutoplayClick={onAutoplayClick}
         />
-        {/* Mobile only */}
-        <div className={styles.bonusPanelMobile}>{/* <BonusPanel /> */}</div>
       </div>
     </>
   );

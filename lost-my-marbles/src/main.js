@@ -19,6 +19,7 @@ let triggerGamePhase = null; // registered by GameWrapper via onRegisterGameStar
     antialias: true,
   });
   document.getElementById("pixi-canvas").appendChild(app.canvas);
+  window.__pixiApp = app; // used by useGameScale to call app.resize() on viewport change
 
   mountApp(
     () => showVideo(),

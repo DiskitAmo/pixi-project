@@ -113,6 +113,7 @@ export default function BetControls(
             >
               <button
                 disabled={disabled}
+                onClick={() => (window as any).__dropMarble?.()}
                 className={`${styles.mainButton} ${isAuto ? styles.mainButtonAuto : ""}`}
               >
                 {/* <span> {isAuto ? "Stop" : ""}</span>
