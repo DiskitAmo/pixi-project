@@ -3,12 +3,26 @@ import { mountApp } from "./App.tsx";
 import { createVideoScreen } from "./component/introVideo.js";
 import { createMarbleGameScreen } from "./game/marbleGameScreen.js";
 import { initDevtools } from "@pixi/devtools";
+import { SOUNDS } from "./lib/constants";
 
 const app = new Application();
 initDevtools(app);
 
 let currentScreen = null;
-let triggerGamePhase = null; // registered by GameWrapper via onRegisterGameStart
+let triggerGamePhase = null;
+
+// ── Background music (same pattern as royal-flush) ────────────────────────────
+const bgMusic = new Audio(SOUNDS.BACKGROUND_MUSIC);
+bgMusic.loop = true;
+bgMusic.volume = 0.1;
+
+export function toggleMusic() {
+  if (bgMusic.paused) {
+    bgMusic.play();
+  } else {
+    bgMusic.pause();
+  }
+}
 
 (async () => {
   await app.init({
@@ -19,7 +33,8 @@ let triggerGamePhase = null; // registered by GameWrapper via onRegisterGameStar
     antialias: true,
   });
   document.getElementById("pixi-canvas").appendChild(app.canvas);
-  window.__pixiApp = app; // used by useGameScale to call app.resize() on viewport change
+  window.__pixiApp = app;
+  window.__toggleMusic = toggleMusic;
 
   mountApp(
     () => showVideo(),
@@ -36,6 +51,9 @@ function clearScreen() {
 }
 
 async function showVideo() {
+  // Start bg music when video begins (browser requires user interaction first)
+  bgMusic.play().catch(() => {});
+
   const { container, ready } = createVideoScreen(app, () => showGame());
 
   currentScreen = container;
@@ -51,6 +69,5 @@ async function showGame() {
   currentScreen = screen;
   app.stage.addChild(currentScreen);
 
-  // Transition React overlay to game UI
   triggerGamePhase?.();
 }

@@ -1,4 +1,4 @@
-/* Top-left: sidebar buttons */
+/* ── Sidebar ─────────────────────────────────────── */
 .sidebarWrapper {
   position: absolute;
   top: 0;
@@ -7,7 +7,7 @@
   z-index: 50;
 }
 
-/* Top-center: logo */
+/* ── Header: logo ────────────────────────────────── */
 .gameHeader {
   position: absolute;
   top: 12px;
@@ -25,8 +25,16 @@
   height: auto;
 }
 
-/* Bottom bar: risk (left) + bet controls (right) */
-.gameFooter {
+/* ── Shared label colour ─────────────────────────── */
+.labelSpan {
+  margin-right: 6px;
+  color: #00ff00;
+}
+
+/* ══════════════════════════════════════════════════
+   DESKTOP footer  (shown on ≥ 768 px)
+   ══════════════════════════════════════════════════ */
+.gameFooterDesktop {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -39,14 +47,12 @@
   z-index: 100;
 }
 
-/* Bottom-left: risk selector + bet/credit info stacked */
 .footerLeft {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-/* Bet / Credit text under risk selector */
 .details {
   display: flex;
   flex-direction: column;
@@ -60,44 +66,82 @@
   color: #fff;
 }
 
-.riskSpan {
-  margin-right: 8px;
-  color: #00ff00;
+/* ══════════════════════════════════════════════════
+   MOBILE footer  (shown on < 768 px)
+   ══════════════════════════════════════════════════ */
+.gameFooterMobile {
+  display: none; /* hidden on desktop */
 }
 
-.winFeedWrapper {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
+@media (max-width: 767px) {
+  /* hide desktop footer, show mobile footer */
+  .gameFooterDesktop { display: none; }
 
-.bonusPanelDesktop { display: block; }
-.bonusPanelMobile  { display: none; }
-
-@media (max-width: 768px) {
-  .gameHeader { top: 6px; }
-  .gameHeader .logo { width: 150px; }
-
-  .gameFooter {
+  .gameFooterMobile {
+    display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding-bottom: 12px;
-  }
-
-  .details { flex-direction: row; gap: 16px; }
-
-  .bonusPanelDesktop { display: none; }
-  .bonusPanelMobile {
-    display: block;
+    gap: 6px;
     position: absolute;
-    top: 18px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 12px 10px;
+    pointer-events: auto;
+    z-index: 100;
+    background: #000;
   }
+
+  /* Bet amount pill */
+  .mobileBetAmount {
+    background: rgba(0, 0, 0, 0.75);
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    padding: 4px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* Row: MAX  |  [-] [GREEN] [+]  |  RISK */
+  .mobileControlsRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  /* MAX button */
+  .mobileMaxBtn {
+    border: 1.5px solid rgba(255, 255, 255, 0.7);
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 10px;
+    cursor: pointer;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  /* BET / CREDIT row */
+  .mobileBetCredit {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 4px;
+  }
+
+  .mobileBetCredit p {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  /* Logo smaller on mobile */
+  .gameHeader { top: 6px; }
+  .gameHeader .logo { width: 150px; }
 }

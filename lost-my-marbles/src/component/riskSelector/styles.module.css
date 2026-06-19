@@ -63,13 +63,14 @@
   margin: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .wrapper {
-    order: 2;
-    transform: scale(0.8);
+    transform: scale(0.85);
+    transform-origin: center;
   }
   .riskBoxWrapper {
     min-width: unset;
     width: max-content;
+    padding: 6px 4px;
   }
 }

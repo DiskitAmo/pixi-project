@@ -48,7 +48,11 @@ export const ASSETS = {
   BONUS_NANSCARE: "/assets/bonus/nanscare.mp4",
 } as const;
 
-export const SOUNDS = {} as const;
+export const SOUNDS = {
+  BACKGROUND_MUSIC: "/sounds/background-music.mp3",
+  WIN_SOUND: "/sounds/win-sound.mp3",
+  INTRO_SFX: "/sounds/SFX/lost-my-marbles-intro.wav",
+} as const;
 
 export const PRELOAD_ASSETS: string[] = [
   // Core game images

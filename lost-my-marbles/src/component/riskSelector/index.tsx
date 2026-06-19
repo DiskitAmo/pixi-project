@@ -1,43 +1,21 @@
+import { useState } from "react";
 import styles from "./styles.module.css";
 import SVGIcon from "../svg-icon/SVGIcon";
 
-// import {
-//   selectCanPlaceBet,
-//   useFlushStore,
-// } from "../../../store/useRoyalFlushStore";
-// import type { RiskLevel } from "../../../store/useRoyalFlushStore";
-
 const risks = ["LOW", "MED", "HIGH"] as const;
 
-// Map between UI labels and store values
-const UI_TO_STORE: Record<string, any> = {
-  LOW: "low",
-  MED: "medium",
-  HIGH: "high",
-};
-const STORE_TO_INDEX: Record<any, number> = {
-  low: 0,
-  medium: 1,
-  high: 2,
-};
-
 export const riskColors: Record<string, string> = {
-  LOW: "#a855f7", // purple
-  MED: "#3b82f6", // blue
-  HIGH: "#eab308", // yellow
+  LOW: "#a855f7",
+  MED: "#3b82f6",
+  HIGH: "#eab308",
 };
 
-export default function GameControls() {
-  // const currentRisk = useFlushStore((s) => s.currentRisk);
-  // const setRisk = useFlushStore((s) => s.setRisk);
-  // const canBet = useFlushStore(selectCanPlaceBet);
+export default function RiskSelector() {
+  const [riskIndex, setRiskIndex] = useState(0);
   const disabled = false;
 
-  //const riskIndex = STORE_TO_INDEX[currentRisk] ?? 0;
-  const riskIndex = 0;
   const changeRisk = (dir: number) => {
-    const newIndex = (riskIndex + dir + risks.length) % risks.length;
-    //setRisk(UI_TO_STORE[risks[newIndex]]);
+    setRiskIndex((prev) => (prev + dir + risks.length) % risks.length);
   };
 
   const color = riskColors[risks[riskIndex]];

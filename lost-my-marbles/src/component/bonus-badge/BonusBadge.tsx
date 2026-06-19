@@ -1,13 +1,6 @@
 // import { useFlushStore } from "../../../store/useRoyalFlushStore";
 import styles from "./BonusBadge.module.css";
-import { ASSETS } from "../../lib/constants";
-
-const ANNOUNCEMENT_IMAGES: Record<string, string> = {
-  pee: ASSETS.WEEE_BONUS,
-  poo: ASSETS.TURD_TIME,
-  phone: ASSETS.BOOTY_CALL,
-  plunger: ASSETS.PLUNGER_RUSH,
-};
+//import { ASSETS } from "../../lib/constants";
 
 export default function BonusBadge() {
   // const announcingBonus = useFlushStore((s) => s.announcingBonus);
@@ -36,16 +29,16 @@ export default function BonusBadge() {
     <div
       className={styles.wrapper}
       style={{
-        opacity: visible ? 1 : 0,
-        transform: `translateX(-50%) scale(${visible ? 1 : 0.4})`,
+        opacity: 0,
+        transform: `translateX(-50%) scale(${0.4})`,
       }}
     >
-      {imgSrc && (
+      {/* {imgSrc && (
         <>
           <div className={styles.ring} />
           <img src={imgSrc} alt={activeType ?? ""} className={styles.image} />
         </>
-      )}
+      )} */}
     </div>
   );
 }

@@ -36,7 +36,7 @@ export default function GameWrapper({ onStart, onRegisterGameStart }: GameWrappe
       <UIOverlay
         onBetClick={() => {}}
         onAutoplayClick={() => {}}
-        onToggleMute={() => {}}
+        onToggleMute={() => (window as any).__toggleMusic?.()}
       />
     );
   }
