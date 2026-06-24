@@ -2,6 +2,7 @@ import BetControls from "../bet-controls/BetControls";
 import Logo from "../logoContainer/Logo";
 import RiskSelector from "../riskSelector";
 import Sidebar from "../sidebar";
+import { useMarbleStore } from "../../store/useMarbleStore";
 
 import styles from "./gameControl.module.css";
 
@@ -16,6 +17,9 @@ export default function UIOverlay({
   onAutoplayClick,
   onToggleMute,
 }: UIOverlayProps) {
+  const betAmount = useMarbleStore((s) => s.betAmount);
+  const setMaxBet = useMarbleStore((s) => s.setMaxBet);
+
   return (
     <>
       <Sidebar onToggleMute={onToggleMute} />
@@ -29,7 +33,7 @@ export default function UIOverlay({
         <div className={styles.footerLeft}>
           <RiskSelector />
           <div className={styles.details}>
-            <p><span className={styles.labelSpan}>BET</span>$1.00</p>
+            <p><span className={styles.labelSpan}>BET</span>${betAmount.toFixed(2)}</p>
             <p><span className={styles.labelSpan}>CREDIT</span>$9,984.75</p>
           </div>
         </div>
@@ -39,18 +43,18 @@ export default function UIOverlay({
       {/* ── Mobile footer ── */}
       <div className={styles.gameFooterMobile}>
         {/* Bet amount pill */}
-        <div className={styles.mobileBetAmount}>$1.00</div>
+        <div className={styles.mobileBetAmount}>${betAmount.toFixed(2)}</div>
 
         {/* Main controls row: MAX | [-] [GREEN] [+] | RISK */}
         <div className={styles.mobileControlsRow}>
-          <button className={styles.mobileMaxBtn}>MAX</button>
+          <button className={styles.mobileMaxBtn} onClick={setMaxBet}>MAX</button>
           <BetControls onBetClick={onBetClick} onAutoplayClick={onAutoplayClick} mobileInline />
           <RiskSelector />
         </div>
 
         {/* BET / CREDIT row */}
         <div className={styles.mobileBetCredit}>
-          <p><span className={styles.labelSpan}>BET</span> $1.00</p>
+          <p><span className={styles.labelSpan}>BET</span> ${betAmount.toFixed(2)}</p>
           <p><span className={styles.labelSpan}>CREDIT</span> $9,984.75</p>
         </div>
       </div>

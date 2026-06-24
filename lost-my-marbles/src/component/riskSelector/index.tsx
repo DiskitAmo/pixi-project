@@ -15,6 +15,7 @@ export default function RiskSelector() {
   const disabled = false;
 
   const changeRisk = (dir: number) => {
+    new Audio("/sounds/SFX/change-risk.wav").play().catch(() => {});
     setRiskIndex((prev) => (prev + dir + risks.length) % risks.length);
   };
 

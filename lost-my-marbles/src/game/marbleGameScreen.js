@@ -8,7 +8,9 @@ const RING_MULTIPLIERS = [1.2, 1.5, 2.0, 4.2, 8.0];
 // Starting multiplier per outer-ring side — one value from the pool per side
 const OUTER_SIDE_MULTIPLIERS = [20, 8, 2.5, 0.5, 1.8, 4.2, 10];
 // Pool that all badges cycle through continuously (matches reference game values)
-const MULTIPLIER_POOL = [0.3, 0.5, 1.2, 1.5, 1.8, 2, 2.5, 3.5, 4.2, 5.5, 8, 10, 15, 20];
+const MULTIPLIER_POOL = [
+  0.3, 0.5, 1.2, 1.5, 1.8, 2, 2.5, 3.5, 4.2, 5.5, 8, 10, 15, 20,
+];
 // How fast each badge steps to the next pool value (fast slot-machine effect)
 const BADGE_CYCLE_MS = 300;
 const COLORED_SEGMENTS = [
@@ -17,37 +19,50 @@ const COLORED_SEGMENTS = [
 ];
 const OPEN_SIDE = [5, 4, 3, 2]; // per inner ring innermost→second-outermost
 const ROTATION_SPEED = 0.01;
+const INNER_ROTATION_SPEED = 0.02;
 
 // Risk tier → colour (matched to royal-flush COLORS: low=#E128FF, medium=#48C8FF, high=#FFED28)
 function getRiskColor(m) {
-  if (m >= 5)   return 0xFFED28; // high   — yellow/gold  (≥5x)
-  if (m >= 1.5) return 0x48C8FF; // medium — cyan/sky     (1.5x–5x)
-  return 0xE128FF;               // low    — magenta/pink (<1.5x)
+  if (m >= 5) return 0xffed28; // high   — yellow/gold  (≥5x)
+  if (m >= 1.5) return 0x48c8ff; // medium — cyan/sky     (1.5x–5x)
+  return 0xe128ff; // low    — magenta/pink (<1.5x)
 }
 
 // Linear-interpolate between two hex colours
 function lerpColor(c1, c2, t) {
-  const r = Math.round(((c1 >> 16) & 0xff) + (((c2 >> 16) & 0xff) - ((c1 >> 16) & 0xff)) * t);
-  const g = Math.round(((c1 >>  8) & 0xff) + (((c2 >>  8) & 0xff) - ((c1 >>  8) & 0xff)) * t);
-  const b = Math.round(( c1        & 0xff) + (( c2        & 0xff) - ( c1        & 0xff)) * t);
+  const r = Math.round(
+    ((c1 >> 16) & 0xff) + (((c2 >> 16) & 0xff) - ((c1 >> 16) & 0xff)) * t,
+  );
+  const g = Math.round(
+    ((c1 >> 8) & 0xff) + (((c2 >> 8) & 0xff) - ((c1 >> 8) & 0xff)) * t,
+  );
+  const b = Math.round((c1 & 0xff) + ((c2 & 0xff) - (c1 & 0xff)) * t);
   return (r << 16) | (g << 8) | b;
 }
 
 export async function createMarbleGameScreen(app) {
-  const [bgTexture, charTex1, charTex2, charTex3, charTex4] = await Promise.all([
-    Assets.load(ASSETS.BACKGROUND_IMG),
-    Assets.load(ASSETS.CHARACTER_VARIANT_1),
-    Assets.load(ASSETS.CHARACTER_VARIANT_2),
-    Assets.load(ASSETS.CHARACTER_VARIANT_3),
-    Assets.load(ASSETS.CHARACTER_VARIANT_4),
-  ]);
+  const [bgTexture, charTex1, charTex2, charTex3, charTex4] = await Promise.all(
+    [
+      Assets.load(ASSETS.BACKGROUND_IMG),
+      Assets.load(ASSETS.CHARACTER_VARIANT_1),
+      Assets.load(ASSETS.CHARACTER_VARIANT_2),
+      Assets.load(ASSETS.CHARACTER_VARIANT_3),
+      Assets.load(ASSETS.CHARACTER_VARIANT_4),
+    ],
+  );
   const charTextures = [charTex1, charTex2, charTex3, charTex4];
 
   const root = new Container();
   let destroyed = false;
-  root.on("destroyed", () => { destroyed = true; });
+  root.on("destroyed", () => {
+    destroyed = true;
+  });
 
-  let bgSprite, board, outerRing, innerRings = [], character;
+  let bgSprite,
+    board,
+    outerRing,
+    innerRings = [],
+    character;
   // Badge refs keyed by outer-ring side index
   let outerBadges = [];
 
@@ -64,7 +79,7 @@ export async function createMarbleGameScreen(app) {
     const cx = width / 2;
     const cy = isMobile ? gameAreaHeight / 2 - 20 : height / 2;
     // Keep rings fully inside the narrower game area dimension, with a small margin for badges
-    const maxRadius = Math.min(width, gameAreaHeight) * (isMobile ? 0.30 : 0.35);
+    const maxRadius = Math.min(width, gameAreaHeight) * (isMobile ? 0.3 : 0.35);
 
     // ── Background ──────────────────────────────────────────────────────────
     bgSprite = new Sprite(bgTexture);
@@ -99,7 +114,10 @@ export async function createMarbleGameScreen(app) {
     for (const [startV, endV, color] of COLORED_SEGMENTS) {
       outerGfx.moveTo(outerVerts[startV].x, outerVerts[startV].y);
       for (let i = startV + 1; i <= endV; i++) {
-        outerGfx.lineTo(outerVerts[i % OUTER_SIDES].x, outerVerts[i % OUTER_SIDES].y);
+        outerGfx.lineTo(
+          outerVerts[i % OUTER_SIDES].x,
+          outerVerts[i % OUTER_SIDES].y,
+        );
       }
       outerGfx.stroke({ width: 4, color });
     }
@@ -111,7 +129,7 @@ export async function createMarbleGameScreen(app) {
         const b = outerVerts[(i + 1) % OUTER_SIDES];
         outerGfx.moveTo(a.x, a.y);
         outerGfx.lineTo(b.x, b.y);
-        outerGfx.stroke({ width: 2.5, color: 0xffffff, alpha: 0.85 });
+        outerGfx.stroke({ width: 5, color: 0xffffff, alpha: 0.85 });
       }
     }
 
@@ -125,7 +143,15 @@ export async function createMarbleGameScreen(app) {
       const riskColor = getRiskColor(mult);
       const badge = drawBadge(outerRing, bx, by, `${mult}x`, riskColor);
       // phaseOffset staggers each badge's pulse so they don't all blink in sync
-      outerBadges.push({ gfx: badge.gfx, text: badge.text, x: bx, y: by, riskColor, currentMultiplier: mult, phaseOffset: (i / OUTER_SIDES) * Math.PI * 2 });
+      outerBadges.push({
+        gfx: badge.gfx,
+        text: badge.text,
+        x: bx,
+        y: by,
+        riskColor,
+        currentMultiplier: mult,
+        phaseOffset: (i / OUTER_SIDES) * Math.PI * 2,
+      });
     }
 
     // Inner rings — store openSide and radius for gap navigation
@@ -146,13 +172,17 @@ export async function createMarbleGameScreen(app) {
         const b = verts[(i + 1) % INNER_SIDES];
         gfx.moveTo(a.x, a.y);
         gfx.lineTo(b.x, b.y);
-        gfx.stroke({ width: 2.5, color: 0xffffff, alpha: 0.85 });
+        gfx.stroke({ width: 4, color: 0xffffff, alpha: 0.85 });
       }
 
       const clockwise = (RING_COUNT - 2 - r) % 2 !== 0;
-      innerRings.push({ container: ringContainer, clockwise, openSide, radius });
+      innerRings.push({
+        container: ringContainer,
+        clockwise,
+        openSide,
+        radius,
+      });
     }
-
   }
 
   build();
@@ -171,7 +201,7 @@ export async function createMarbleGameScreen(app) {
       }
     }
     for (const { container: rc, clockwise } of innerRings) {
-      rc.rotation += clockwise ? ROTATION_SPEED : -ROTATION_SPEED;
+      rc.rotation += clockwise ? INNER_ROTATION_SPEED : -INNER_ROTATION_SPEED;
     }
   };
   app.ticker.add(tickerFn);
@@ -186,15 +216,23 @@ export async function createMarbleGameScreen(app) {
 
       // Border: blend from dim base colour to full risk colour
       const borderAlpha = 0.35 + pulse * 0.65;
-      const borderWidth  = 1.5 + pulse * 2;
+      const borderWidth = 1.5 + pulse * 2;
       badge.gfx.clear();
       badge.gfx.circle(0, 0, 22);
       badge.gfx.fill({ color: 0x0a0a1a, alpha: 0.9 });
       badge.gfx.circle(0, 0, 22);
-      badge.gfx.stroke({ width: borderWidth, color: badge.riskColor, alpha: borderAlpha });
+      badge.gfx.stroke({
+        width: borderWidth,
+        color: badge.riskColor,
+        alpha: borderAlpha,
+      });
 
       // Text: interpolate from white → risk colour and back
-      badge.text.style.fill = lerpColor(0xffffff, badge.riskColor, pulse * 0.75);
+      badge.text.style.fill = lerpColor(
+        0xffffff,
+        badge.riskColor,
+        pulse * 0.75,
+      );
     }
   };
   app.ticker.add(badgeTickFn);
@@ -214,15 +252,21 @@ export async function createMarbleGameScreen(app) {
       // Stagger starting index so badges show different values from the start
       badge.poolIndex = Math.floor((MULTIPLIER_POOL.length / OUTER_SIDES) * i);
 
-      const id = setInterval(() => {
-        if (destroyed) { clearInterval(id); return; }
-        // Advance to next pool value (wrap around)
-        badge.poolIndex = (badge.poolIndex + 1) % MULTIPLIER_POOL.length;
-        const next = MULTIPLIER_POOL[badge.poolIndex];
-        badge.currentMultiplier = next;
-        badge.riskColor = getRiskColor(next);
-        badge.text.text = `${next}x`;
-      }, BADGE_CYCLE_MS + i * 40); // slight stagger so they don't tick in sync
+      const id = setInterval(
+        () => {
+          if (destroyed) {
+            clearInterval(id);
+            return;
+          }
+          // Advance to next pool value (wrap around)
+          badge.poolIndex = (badge.poolIndex + 1) % MULTIPLIER_POOL.length;
+          const next = MULTIPLIER_POOL[badge.poolIndex];
+          badge.currentMultiplier = next;
+          badge.riskColor = getRiskColor(next);
+          badge.text.text = `${next}x`;
+        },
+        BADGE_CYCLE_MS + i * 40,
+      ); // slight stagger so they don't tick in sync
 
       cycleIntervals.push(id);
     });
@@ -246,9 +290,15 @@ export async function createMarbleGameScreen(app) {
     let frame = 0;
     let cycle = 0;
     const frameInterval = setInterval(() => {
-      if (destroyed || !character) { clearInterval(frameInterval); return; }
+      if (destroyed || !character) {
+        clearInterval(frameInterval);
+        return;
+      }
       frame++;
-      if (frame >= charTextures.length) { frame = 0; cycle++; }
+      if (frame >= charTextures.length) {
+        frame = 0;
+        cycle++;
+      }
       character.texture = charTextures[frame];
       if (cycle >= REPEATS) {
         clearInterval(frameInterval);
@@ -281,7 +331,8 @@ export async function createMarbleGameScreen(app) {
           ripple.stroke({ width: strokeWidth, color, alpha });
           if (t >= 1) {
             app.ticker.remove(fn);
-            if (outerRing.children.includes(ripple)) outerRing.removeChild(ripple);
+            if (outerRing.children.includes(ripple))
+              outerRing.removeChild(ripple);
             ripple.destroy();
           }
         };
@@ -289,8 +340,8 @@ export async function createMarbleGameScreen(app) {
       }, delay);
     }
 
-    spawnRipple(0,   0xaa22ff, 3.5, 0.038);
-    spawnRipple(160, 0xff44cc, 2.5, 0.040);
+    spawnRipple(0, 0xaa22ff, 3.5, 0.038);
+    spawnRipple(160, 0xff44cc, 2.5, 0.04);
     spawnRipple(320, 0xaa22ff, 2.0, 0.036);
 
     // Flash badge border purple + pulse text
@@ -303,7 +354,11 @@ export async function createMarbleGameScreen(app) {
       badge.gfx.circle(0, 0, 22);
       badge.gfx.fill({ color: 0x0d0020, alpha: 0.95 });
       badge.gfx.circle(0, 0, 22);
-      badge.gfx.stroke({ width: 2.5, color: 0xcc44ff, alpha: Math.min(1, envelope * 1.4) });
+      badge.gfx.stroke({
+        width: 2.5,
+        color: 0xcc44ff,
+        alpha: Math.min(1, envelope * 1.4),
+      });
 
       badge.text.scale.set(1 + envelope * 0.4);
 
@@ -328,15 +383,24 @@ export async function createMarbleGameScreen(app) {
   let isDropping = false;
 
   function dropMarble() {
-    if (isDropping || destroyed || !board) return;
-    isDropping = true;
+    // if (isDropping || destroyed || !board) return;
+    // isDropping = true;
+    if (destroyed || !board) return;
+    console.log("drop started");
 
-    const path = DROP_ITEM_SOURCES[Math.floor(Math.random() * DROP_ITEM_SOURCES.length)];
+    const path =
+      DROP_ITEM_SOURCES[Math.floor(Math.random() * DROP_ITEM_SOURCES.length)];
     const texture = Assets.get(path);
-    if (!texture) { isDropping = false; return; }
+    // if (!texture) {
+    //   isDropping = false;
+    //   return;
+    // }
 
     const { width, height } = app.screen;
-    const maxRadius = Math.min(width, height) * 0.35;
+    const isMobile = width < 768;
+    const MOBILE_CONTROLS_HEIGHT = 240;
+    const gameAreaHeight = isMobile ? height - MOBILE_CONTROLS_HEIGHT : height;
+    const maxRadius = Math.min(width, gameAreaHeight) * (isMobile ? 0.3 : 0.35);
 
     const marble = new Sprite(texture);
     marble.anchor.set(0.5);
@@ -347,35 +411,57 @@ export async function createMarbleGameScreen(app) {
     board.addChild(marble);
 
     // ── Physics state ────────────────────────────────────────────────────
-    const SPEED   = maxRadius / 300;
-    const BOUNCE  = 0.82;
-    const GRAVITY = SPEED * 0.006;  // px / ms²
+    // const SPEED   = maxRadius / 300;
+    // const BOUNCE  = 0.82;
+    // const GRAVITY = SPEED * 0.006;  // px / ms²
 
     // Drop from just inside the top of the innermost ring with a random lateral push
     const innerR = maxRadius / RING_COUNT;
-    const dir    = Math.random() < 0.5 ? 1 : -1;
-    let px = 0, py = -(innerR * 0.75);
-    let vx = dir * SPEED * (0.3 + Math.random() * 0.4);
-    let vy = SPEED * 0.2; // small initial downward nudge
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    // let px = 0, py = -(innerR * 0.75);
+    // let vx = dir * SPEED * (0.3 + Math.random() * 0.4);
+    // let vy = SPEED * 0.2; // small initial downward nudge
 
-    let lastTime = performance.now();
+    // const marblePhysics = {
+    //   x: 0,
+    //   y: -(innerR * 0.6),
+
+    //   vx: (Math.random() - 0.5) * 3,
+    //   vy: 0,
+
+    //   radius: 11,
+    // };
+
+    const marblePhysics = {
+      x: 0,
+      y: 0,
+      vx: (Math.random() < 0.5 ? 1 : -1) * (1.5 + Math.random() * 2),
+      vy: 0,
+      radius: 11,
+    };
+
+    const GRAVITY = 0.65;
+    const BOUNCE = 1;
+    const AIR_DRAG = 1;
+
     let done = false;
-
+    const SUB_STEPS = 6;
     // Safety: force-exit after 18 s in case gaps never align
-    const safetyTimer = setTimeout(() => {
-      if (done || destroyed) return;
-      done = true;
-      const side = Math.floor(Math.random() * OUTER_SIDES);
-      const ov = polyVerts(OUTER_SIDES, maxRadius, outerRing.rotation);
-      marble.x = (ov[side].x + ov[(side + 1) % OUTER_SIDES].x) / 2;
-      marble.y = (ov[side].y + ov[(side + 1) % OUTER_SIDES].y) / 2;
-      highlightBadge(side);
-      finishMarble();
-    }, 18000);
+    // const safetyTimer = setTimeout(() => {
+    //   if (done || destroyed) return;
+    //   done = true;
+    //   const side = Math.floor(Math.random() * OUTER_SIDES);
+    //   const ov = polyVerts(OUTER_SIDES, maxRadius, outerRing.rotation);
+    //   marble.x = (ov[side].x + ov[(side + 1) % OUTER_SIDES].x) / 2;
+    //   marble.y = (ov[side].y + ov[(side + 1) % OUTER_SIDES].y) / 2;
+    //   highlightBadge(side);
+    //   finishMarble();
+    // }, 18000);
 
     function finishMarble() {
-      clearTimeout(safetyTimer);
-      isDropping = false; // allow next drop immediately
+      //clearTimeout(safetyTimer);
+      console.log("drop finished");
+      //isDropping = false; // allow next drop immediately
       let pulse = 0;
       const pulseFn = () => {
         pulse += 0.1;
@@ -390,100 +476,317 @@ export async function createMarbleGameScreen(app) {
     }
 
     // ── Physics ticker ───────────────────────────────────────────────────
-    const SUB_STEPS = 6;
+    // const SUB_STEPS = 6;
 
-    const stepPhysics = (subDt) => {
-      if (done) return true;
+    // const stepPhysics = (subDt) => {
+    //   if (done) return true;
 
-      vy += GRAVITY * subDt; // gravity pulls marble downward every sub-step
+    //   vy += GRAVITY * subDt; // gravity pulls marble downward every sub-step
 
-      const ex = px + vx * subDt;
-      const ey = py + vy * subDt;
+    //   const ex = px + vx * subDt;
+    //   const ey = py + vy * subDt;
 
-      let solidT = Infinity, solidNx = 0, solidNy = 1;
-      let hasSolid = false, isOuterHit = false, outerHitSide = -1;
+    //   let solidT = Infinity,
+    //     solidNx = 0,
+    //     solidNy = 1;
+    //   let hasSolid = false,
+    //     isOuterHit = false,
+    //     outerHitSide = -1;
 
-      // ── Inner ring walls ───────────────────────────────────────────
-      // Closed sides bounce the marble. Gap side (openSide) is one-directional:
-      // lets the marble EXIT outward (inside→outside) but blocks re-entry.
-      const distFromCenter = Math.sqrt(px * px + py * py);
-      for (const ring of innerRings) {
-        const verts = polyVerts(INNER_SIDES, ring.radius, ring.container.rotation);
-        const isInsideThisRing = distFromCenter < ring.radius;
-        for (let s = 0; s < INNER_SIDES; s++) {
-          if (s === ring.openSide && isInsideThisRing) continue; // gap — marble exits outward
-          // gap from outside = solid wall (blocks re-entry into inner ring)
-          const a = verts[s], b = verts[(s + 1) % INNER_SIDES];
-          const t = segIntersect(px, py, ex, ey, a.x, a.y, b.x, b.y);
-          if (t > 0 && t < solidT) {
-            solidT = t; hasSolid = true; isOuterHit = false;
-            const n = wallNormal(a, b, vx, vy);
-            solidNx = n.nx; solidNy = n.ny;
-          }
-        }
-      }
+    //   // ── Inner ring walls ───────────────────────────────────────────
+    //   // Closed sides bounce the marble. Gap side (openSide) is one-directional:
+    //   // lets the marble EXIT outward (inside→outside) but blocks re-entry.
+    //   const distFromCenter = Math.sqrt(px * px + py * py);
+    //   for (const ring of innerRings) {
+    //     const verts = polyVerts(
+    //       INNER_SIDES,
+    //       ring.radius,
+    //       ring.container.rotation,
+    //     );
+    //     const isInsideThisRing = distFromCenter < ring.radius;
+    //     for (let s = 0; s < INNER_SIDES; s++) {
+    //       if (s === ring.openSide && isInsideThisRing) continue; // gap — marble exits outward
+    //       // gap from outside = solid wall (blocks re-entry into inner ring)
+    //       const a = verts[s],
+    //         b = verts[(s + 1) % INNER_SIDES];
+    //       const t = segIntersect(px, py, ex, ey, a.x, a.y, b.x, b.y);
+    //       if (t > 0 && t < solidT) {
+    //         solidT = t;
+    //         hasSolid = true;
+    //         isOuterHit = false;
+    //         const n = wallNormal(a, b, vx, vy);
+    //         solidNx = n.nx;
+    //         solidNy = n.ny;
+    //       }
+    //     }
+    //   }
 
-      // ── Outer ring — hitting any side ends the round ────────────────
-      const outerV = polyVerts(OUTER_SIDES, maxRadius, outerRing.rotation);
-      for (let s = 0; s < OUTER_SIDES; s++) {
-        const a = outerV[s], b = outerV[(s + 1) % OUTER_SIDES];
-        const t = segIntersect(px, py, ex, ey, a.x, a.y, b.x, b.y);
-        if (t > 0 && t < solidT) {
-          solidT = t; hasSolid = true; isOuterHit = true; outerHitSide = s;
-          const n = wallNormal(a, b, vx, vy);
-          solidNx = n.nx; solidNy = n.ny;
-        }
-      }
+    //   // ── Outer ring — hitting any side ends the round ────────────────
+    //   const outerV = polyVerts(OUTER_SIDES, maxRadius, outerRing.rotation);
+    //   for (let s = 0; s < OUTER_SIDES; s++) {
+    //     const a = outerV[s],
+    //       b = outerV[(s + 1) % OUTER_SIDES];
+    //     const t = segIntersect(px, py, ex, ey, a.x, a.y, b.x, b.y);
+    //     if (t > 0 && t < solidT) {
+    //       solidT = t;
+    //       hasSolid = true;
+    //       isOuterHit = true;
+    //       outerHitSide = s;
+    //       const n = wallNormal(a, b, vx, vy);
+    //       solidNx = n.nx;
+    //       solidNy = n.ny;
+    //     }
+    //   }
 
-      // ── Resolve ────────────────────────────────────────────────────
-      if (hasSolid) {
-        const hx = px + (ex - px) * solidT;
-        const hy = py + (ey - py) * solidT;
+    //   // ── Resolve ────────────────────────────────────────────────────
+    //   if (hasSolid) {
+    //     const hx = px + (ex - px) * solidT;
+    //     const hy = py + (ey - py) * solidT;
 
-        if (isOuterHit) {
-          done = true;
-          app.ticker.remove(tickFn);
-          marble.x = hx; marble.y = hy; marble.rotation = 0;
-          highlightBadge(outerHitSide);
-          finishMarble();
-          return true;
-        }
+    //     if (isOuterHit) {
+    //       done = true;
+    //       app.ticker.remove(tickFn);
+    //       marble.x = hx;
+    //       marble.y = hy;
+    //       marble.rotation = 0;
+    //       highlightBadge(outerHitSide);
+    //       finishMarble();
+    //       return true;
+    //     }
 
-        // Reflect velocity off wall, push 1.5 px off surface to avoid re-sticking
-        const dot2 = 2 * (vx * solidNx + vy * solidNy);
-        vx = (vx - dot2 * solidNx) * BOUNCE;
-        vy = (vy - dot2 * solidNy) * BOUNCE;
-        px = hx + solidNx * 1.5;
-        py = hy + solidNy * 1.5;
-        return false;
-      }
+    //     // Reflect velocity off wall, push 1.5 px off surface to avoid re-sticking
+    //     const dot2 = 2 * (vx * solidNx + vy * solidNy);
+    //     vx = (vx - dot2 * solidNx) * BOUNCE;
+    //     vy = (vy - dot2 * solidNy) * BOUNCE;
+    //     px = hx + solidNx * 1.5;
+    //     py = hy + solidNy * 1.5;
+    //     return false;
+    //   }
 
-      px = ex; py = ey;
-      return false;
-    };
+    //   px = ex;
+    //   py = ey;
+    //   return false;
+    // };
+
+    // const tickFn = () => {
+    //   if (destroyed || done) {
+    //     app.ticker.remove(tickFn);
+    //     return;
+    //   }
+
+    //   const now = performance.now();
+    //   const dt = Math.min(now - lastTime, 20);
+    //   lastTime = now;
+
+    //   const subDt = dt / SUB_STEPS;
+    //   for (let s = 0; s < SUB_STEPS; s++) {
+    //     if (stepPhysics(subDt)) return; // round ended mid-frame
+    //   }
+
+    //   marble.x = px;
+    //   marble.y = py;
+    //   marble.rotation += 0.1;
+    // };
 
     const tickFn = () => {
-      if (destroyed || done) { app.ticker.remove(tickFn); return; }
-
-      const now = performance.now();
-      const dt  = Math.min(now - lastTime, 20);
-      lastTime  = now;
-
-      const subDt = dt / SUB_STEPS;
-      for (let s = 0; s < SUB_STEPS; s++) {
-        if (stepPhysics(subDt)) return; // round ended mid-frame
+      if (destroyed || done) {
+        app.ticker.remove(tickFn);
+        return;
       }
 
-      marble.x = px;
-      marble.y = py;
-      marble.rotation += 0.1;
+      const dt = app.ticker.deltaMS / 16.666;
+      const subDt = dt / SUB_STEPS;
+
+      for (let step = 0; step < SUB_STEPS; step++) {
+        if (done) break;
+
+        // Gravity + drag each sub-step
+        marblePhysics.vy += GRAVITY * subDt;
+        marblePhysics.vx *= AIR_DRAG;
+        marblePhysics.vy *= AIR_DRAG;
+
+        marblePhysics.x += marblePhysics.vx * subDt;
+        marblePhysics.y += marblePhysics.vy * subDt;
+
+        // Inner ring walls — bounce uses relative velocity to handle rotating walls
+        for (const ring of innerRings) {
+          const omega = ring.clockwise
+            ? INNER_ROTATION_SPEED
+            : -INNER_ROTATION_SPEED;
+          const segments = getRingSegments(ring);
+
+          for (const seg of segments) {
+            const closest = closestPointOnSegment(
+              marblePhysics.x,
+              marblePhysics.y,
+              seg.a.x,
+              seg.a.y,
+              seg.b.x,
+              seg.b.y,
+            );
+
+            const dx = marblePhysics.x - closest.x;
+            const dy = marblePhysics.y - closest.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 0.0001 || dist >= marblePhysics.radius) continue;
+
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            // Push marble clear of the wall
+            marblePhysics.x += nx * (marblePhysics.radius - dist);
+            marblePhysics.y += ny * (marblePhysics.radius - dist);
+
+            // Tangential velocity of the wall at the contact point
+            const wallVx = -omega * closest.y;
+            const wallVy = omega * closest.x;
+
+            // Relative velocity of marble w.r.t. the moving wall
+            const relDot =
+              (marblePhysics.vx - wallVx) * nx +
+              (marblePhysics.vy - wallVy) * ny;
+
+            // Only impulse if approaching (covers both "marble hits wall" and "wall hits marble")
+            if (relDot < 0) {
+              marblePhysics.vx -= (1 + BOUNCE) * relDot * nx;
+              marblePhysics.vy -= (1 + BOUNCE) * relDot * ny;
+            }
+          }
+        }
+
+        // Outer ring — hitting any side ends the round
+        const outerSegments = getOuterSegments(maxRadius, outerRing.rotation);
+
+        for (const seg of outerSegments) {
+          const closest = closestPointOnSegment(
+            marblePhysics.x,
+            marblePhysics.y,
+            seg.a.x,
+            seg.a.y,
+            seg.b.x,
+            seg.b.y,
+          );
+
+          const dx = marblePhysics.x - closest.x;
+          const dy = marblePhysics.y - closest.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist >= marblePhysics.radius) continue;
+
+          done = true;
+          marble.x = marblePhysics.x;
+          marble.y = marblePhysics.y;
+          highlightBadge(seg.sideIndex);
+          finishMarble();
+          app.ticker.remove(tickFn);
+          return;
+        }
+      }
+
+      marble.x = marblePhysics.x;
+      marble.y = marblePhysics.y;
+      marble.rotation += marblePhysics.vx * 0.03;
     };
+    // const tickFn = () => {
+    //   if (destroyed || done) {
+    //     app.ticker.remove(tickFn);
+    //     return;
+    //   }
+
+    //   const dt = app.ticker.deltaMS / 16.666;
+    //   const subDt = dt / SUB_STEPS;
+
+    //   for (let step = 0; step < SUB_STEPS; step++) {
+    //     if (done) break;
+
+    //     marblePhysics.vy += GRAVITY * subDt;
+    //     marblePhysics.vx *= AIR_DRAG;
+    //     marblePhysics.vy *= AIR_DRAG;
+    //     marblePhysics.x += marblePhysics.vx * subDt;
+    //     marblePhysics.y += marblePhysics.vy * subDt;
+
+    //     // INNER RINGS
+    //     for (const ring of innerRings) {
+    //       const segments = getRingSegments(ring);
+    //       for (const seg of segments) {
+    //         const closest = closestPointOnSegment(
+    //           marblePhysics.x,
+    //           marblePhysics.y,
+    //           seg.a.x,
+    //           seg.a.y,
+    //           seg.b.x,
+    //           seg.b.y,
+    //         );
+    //         const dx = marblePhysics.x - closest.x;
+    //         const dy = marblePhysics.y - closest.y;
+    //         const dist = Math.sqrt(dx * dx + dy * dy);
+    //         if (dist >= marblePhysics.radius) continue;
+
+    //         const overlap = marblePhysics.radius - dist;
+    //         const nx = dx / (dist || 0.0001);
+    //         const ny = dy / (dist || 0.0001);
+
+    //         // Always push the marble out of the wall geometrically
+    //         marblePhysics.x += nx * overlap;
+    //         marblePhysics.y += ny * overlap;
+
+    //         // Only flip velocity if actually moving INTO this wall.
+    //         // This is the key fix — without it, a corner segment re-flips
+    //         // velocity that's already separating and kills the bounce.
+    //         const dot = marblePhysics.vx * nx + marblePhysics.vy * ny;
+    //         if (dot < 0) {
+    //           const reflected = reflectVelocity(
+    //             marblePhysics.vx,
+    //             marblePhysics.vy,
+    //             nx,
+    //             ny,
+    //             BOUNCE,
+    //           );
+    //           marblePhysics.vx = reflected.vx;
+    //           marblePhysics.vy = reflected.vy;
+    //         }
+    //       }
+    //     }
+
+    //     // OUTER RING
+    //     const outerSegments = getOuterSegments(maxRadius, outerRing.rotation);
+    //     for (const seg of outerSegments) {
+    //       const closest = closestPointOnSegment(
+    //         marblePhysics.x,
+    //         marblePhysics.y,
+    //         seg.a.x,
+    //         seg.a.y,
+    //         seg.b.x,
+    //         seg.b.y,
+    //       );
+    //       const dx = marblePhysics.x - closest.x;
+    //       const dy = marblePhysics.y - closest.y;
+    //       const dist = Math.sqrt(dx * dx + dy * dy);
+    //       if (dist >= marblePhysics.radius) continue;
+
+    //       done = true;
+    //       highlightBadge(seg.sideIndex);
+    //       marble.x = marblePhysics.x;
+    //       marble.y = marblePhysics.y;
+    //       finishMarble();
+    //       app.ticker.remove(tickFn);
+    //       return;
+    //     }
+    //   }
+
+    //   marble.x = marblePhysics.x;
+    //   marble.y = marblePhysics.y;
+    //   marble.rotation += marblePhysics.vx * 0.03;
+    // };
 
     app.ticker.add(tickFn);
   }
 
   window.__dropMarble = dropMarble;
-  root.on("destroyed", () => { window.__dropMarble = null; });
+  root.on("destroyed", () => {
+    window.__dropMarble = null;
+  });
 
   return root;
 }
@@ -505,21 +808,28 @@ function polyVerts(sides, radius, rotation) {
 
 // 2-D segment intersection: returns t ∈ (0,1] along p1→p2 where it crosses p3→p4, or -1
 function segIntersect(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y) {
-  const d1x = p2x - p1x, d1y = p2y - p1y;
-  const d2x = p4x - p3x, d2y = p4y - p3y;
+  const d1x = p2x - p1x,
+    d1y = p2y - p1y;
+  const d2x = p4x - p3x,
+    d2y = p4y - p3y;
   const denom = d1x * d2y - d1y * d2x;
   if (Math.abs(denom) < 1e-9) return -1; // parallel
   const t = ((p3x - p1x) * d2y - (p3y - p1y) * d2x) / denom;
   const u = ((p3x - p1x) * d1y - (p3y - p1y) * d1x) / denom;
-  return (t > 0 && t <= 1 && u >= 0 && u <= 1) ? t : -1;
+  return t > 0 && t <= 1 && u >= 0 && u <= 1 ? t : -1;
 }
 
 // Outward wall normal for segment a→b, oriented to oppose incoming velocity
 function wallNormal(a, b, vx, vy) {
-  const wx = b.x - a.x, wy = b.y - a.y;
+  const wx = b.x - a.x,
+    wy = b.y - a.y;
   const len = Math.sqrt(wx * wx + wy * wy) || 1;
-  let nx = -wy / len, ny = wx / len;
-  if (vx * nx + vy * ny > 0) { nx = -nx; ny = -ny; } // flip if wrong side
+  let nx = -wy / len,
+    ny = wx / len;
+  if (vx * nx + vy * ny > 0) {
+    nx = -nx;
+    ny = -ny;
+  } // flip if wrong side
   return { nx, ny };
 }
 
@@ -550,4 +860,64 @@ function drawBadge(parent, x, y, label, riskColor = 0x4444aa) {
   parent.addChild(text);
 
   return { gfx, text };
+}
+
+function closestPointOnSegment(px, py, ax, ay, bx, by) {
+  const abx = bx - ax;
+  const aby = by - ay;
+
+  const apx = px - ax;
+  const apy = py - ay;
+
+  const abLenSq = abx * abx + aby * aby;
+
+  let t = (apx * abx + apy * aby) / abLenSq;
+
+  t = Math.max(0, Math.min(1, t));
+
+  return {
+    x: ax + abx * t,
+    y: ay + aby * t,
+  };
+}
+
+function reflectVelocity(vx, vy, nx, ny, bounce) {
+  const dot = vx * nx + vy * ny;
+  return {
+    vx: (vx - 2 * dot * nx) * bounce,
+    vy: (vy - 2 * dot * ny) * bounce,
+  };
+}
+
+function getRingSegments(ring) {
+  const verts = polyVerts(INNER_SIDES, ring.radius, ring.container.rotation);
+
+  const segments = [];
+
+  for (let i = 0; i < INNER_SIDES; i++) {
+    if (i === ring.openSide) continue;
+
+    segments.push({
+      a: verts[i],
+      b: verts[(i + 1) % INNER_SIDES],
+    });
+  }
+
+  return segments;
+}
+
+function getOuterSegments(radius, rotation) {
+  const verts = polyVerts(OUTER_SIDES, radius, rotation);
+
+  const segments = [];
+
+  for (let i = 0; i < OUTER_SIDES; i++) {
+    segments.push({
+      a: verts[i],
+      b: verts[(i + 1) % OUTER_SIDES],
+      sideIndex: i,
+    });
+  }
+
+  return segments;
 }

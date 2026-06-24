@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 import SVGIcon from "../svg-icon/SVGIcon";
 import styles from "./BetControls.module.css";
+import { useMarbleStore } from "../../store/useMarbleStore";
 
 interface BetControlsProps {
   onBetClick: (betAmount: number) => void;
@@ -16,6 +17,8 @@ export default function BetControls({ mobileInline }: BetControlsProps) {
   const disabled = false;
   const isAuto = false;
 
+  const { incrementBet, decrementBet, setMaxBet } = useMarbleStore();
+
   useEffect(() => {
     return () => {
       if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
@@ -27,7 +30,7 @@ export default function BetControls({ mobileInline }: BetControlsProps) {
       className={`${styles.betWrapper} ${mobileInline ? styles.betWrapperMobile : ""}`}
     >
       {/* Minus button */}
-      <button disabled={disabled} className={styles.circleButton}>
+      <button disabled={disabled} className={styles.circleButton} onClick={decrementBet}>
         <SVGIcon name="minsIcon" />
       </button>
 
@@ -74,13 +77,13 @@ export default function BetControls({ mobileInline }: BetControlsProps) {
       </div>
 
       {/* Plus button */}
-      <button disabled={disabled} className={styles.circleButton}>
+      <button disabled={disabled} className={styles.circleButton} onClick={incrementBet}>
         <SVGIcon name="plusIcon" customClass={styles.plusIcon} />
       </button>
 
       {/* MAX button — only shown in desktop mode */}
       {!mobileInline && (
-        <button disabled={disabled} className={styles.maxButton}>
+        <button disabled={disabled} className={styles.maxButton} onClick={setMaxBet}>
           MAX
         </button>
       )}
