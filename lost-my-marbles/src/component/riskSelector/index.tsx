@@ -1,6 +1,6 @@
-import { useState } from "react";
 import styles from "./styles.module.css";
 import SVGIcon from "../svg-icon/SVGIcon";
+import { useMarbleStore } from "../../store/useMarbleStore";
 
 const risks = ["LOW", "MED", "HIGH"] as const;
 
@@ -11,12 +11,13 @@ export const riskColors: Record<string, string> = {
 };
 
 export default function RiskSelector() {
-  const [riskIndex, setRiskIndex] = useState(0);
+  const riskIndex = useMarbleStore((s) => s.riskIndex);
+  const setRiskIndex = useMarbleStore((s) => s.setRiskIndex);
   const disabled = false;
 
   const changeRisk = (dir: number) => {
     new Audio("/sounds/SFX/change-risk.wav").play().catch(() => {});
-    setRiskIndex((prev) => (prev + dir + risks.length) % risks.length);
+    setRiskIndex((riskIndex + dir + risks.length) % risks.length);
   };
 
   const color = riskColors[risks[riskIndex]];

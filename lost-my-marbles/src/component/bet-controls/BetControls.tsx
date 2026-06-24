@@ -1,8 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import SVGIcon from "../svg-icon/SVGIcon";
 import styles from "./BetControls.module.css";
 import { useMarbleStore } from "../../store/useMarbleStore";
+import AutoplayModal from "../autoplay-modal";
 
 interface BetControlsProps {
   onBetClick: (betAmount: number) => void;
@@ -12,7 +13,7 @@ interface BetControlsProps {
 }
 
 export default function BetControls({ mobileInline }: BetControlsProps) {
-  //const [showAutoplayModal, setShowAutoplayModal] = useState(false);
+  const [showAutoplayModal, setShowAutoplayModal] = useState(false);
   const hideTimeoutRef = useRef<number | null>(null);
   const disabled = false;
   const isAuto = false;
@@ -66,7 +67,7 @@ export default function BetControls({ mobileInline }: BetControlsProps) {
 
         <button
           disabled={disabled}
-          //onClick={() => setShowAutoplayModal(true)}
+          onClick={() => setShowAutoplayModal(true)}
           className={`${styles.autoplayButton} ${disabled ? styles.autoplayDisabled : ""}`}
         >
           <div className={styles.autoplayInner}>
@@ -86,6 +87,15 @@ export default function BetControls({ mobileInline }: BetControlsProps) {
         <button disabled={disabled} className={styles.maxButton} onClick={setMaxBet}>
           MAX
         </button>
+      )}
+
+      {showAutoplayModal && (
+        <AutoplayModal
+          onClose={() => setShowAutoplayModal(false)}
+          onStart={(plays, bet, risk) => {
+            console.log("Autoplay started:", { plays, bet, risk });
+          }}
+        />
       )}
     </div>
   );

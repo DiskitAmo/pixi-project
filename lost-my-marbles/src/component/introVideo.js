@@ -57,9 +57,9 @@ export function createVideoScreen(app, onVideoEnd) {
 
     const logo = new Sprite(Assets.get(ASSETS.LOGO_SVG));
     logo.anchor.set(0.5);
-    logo.scale.set(0.4);
+    logo.scale.set(0.8);
     logo.x = app.screen.width / 2;
-    logo.y = app.screen.height / 2 - 250;
+    logo.y = app.screen.height / 2;
     container.addChild(logo);
 
     video.play().catch((err) => console.warn("Autoplay blocked:", err));

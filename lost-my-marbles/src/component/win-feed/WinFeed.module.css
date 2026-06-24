@@ -1,0 +1,72 @@
+.feed {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.9rem;
+  background: rgba(18, 0, 36, 0.88);
+  border: 2px solid #c026d3;
+  border-radius: 8px;
+  min-width: 6rem;
+  animation:
+    slideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    fadeOut 0.4s 3.1s ease forwards;
+}
+
+.pill.borderMedium {
+  border-color: #48c8ff;
+}
+
+.pill.borderHigh {
+  border-color: #ffed28;
+}
+
+.multiplier {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #e128ff;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.multiplier.colorMedium {
+  color: #48c8ff;
+}
+
+.multiplier.colorHigh {
+  color: #ffed28;
+}
+
+.amount {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(110%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}

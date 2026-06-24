@@ -2,6 +2,7 @@ import BetControls from "../bet-controls/BetControls";
 import Logo from "../logoContainer/Logo";
 import RiskSelector from "../riskSelector";
 import Sidebar from "../sidebar";
+import WinFeed from "../win-feed/WinFeed";
 import { useMarbleStore } from "../../store/useMarbleStore";
 
 import styles from "./gameControl.module.css";
@@ -22,6 +23,7 @@ export default function UIOverlay({
 
   return (
     <>
+      <WinFeed />
       <Sidebar onToggleMute={onToggleMute} />
 
       <div className={styles.gameHeader}>

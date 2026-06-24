@@ -65,6 +65,10 @@ async function showVideo() {
 async function showGame() {
   clearScreen();
 
+  const introSfx = new Audio(SOUNDS.INTRO_SFX);
+  introSfx.volume = 1.0;
+  introSfx.play().catch(() => {});
+
   const screen = await createMarbleGameScreen(app);
   currentScreen = screen;
   app.stage.addChild(currentScreen);

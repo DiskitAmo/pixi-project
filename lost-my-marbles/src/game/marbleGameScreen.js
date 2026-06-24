@@ -1,5 +1,6 @@
 import { Container, Graphics, Sprite, Text, Assets, TextStyle } from "pixi.js";
 import { ASSETS, DROP_ITEM_SOURCES } from "../lib/constants";
+import { useMarbleStore } from "../store/useMarbleStore";
 
 const OUTER_SIDES = 7;
 const INNER_SIDES = 7; // 6 visible + 1 open
@@ -18,8 +19,8 @@ const COLORED_SEGMENTS = [
   [4, 6, 0xec4899],
 ];
 const OPEN_SIDE = [5, 4, 3, 2]; // per inner ring innermost→second-outermost
-const ROTATION_SPEED = 0.01;
-const INNER_ROTATION_SPEED = 0.02;
+const ROTATION_SPEED = 0.009;
+const INNER_ROTATION_SPEED = 0.016;
 
 // Risk tier → colour (matched to royal-flush COLORS: low=#E128FF, medium=#48C8FF, high=#FFED28)
 function getRiskColor(m) {
@@ -194,14 +195,14 @@ export async function createMarbleGameScreen(app) {
   // ── Ticker: rotate rings ─────────────────────────────────────────────────
   const tickerFn = () => {
     if (outerRing) {
-      outerRing.rotation += ROTATION_SPEED;
+      outerRing.rotation -= ROTATION_SPEED;
       // Counter-rotate each badge text so it stays upright as the ring spins
       for (const badge of outerBadges) {
         badge.text.rotation = -outerRing.rotation;
       }
     }
     for (const { container: rc, clockwise } of innerRings) {
-      rc.rotation += clockwise ? INNER_ROTATION_SPEED : -INNER_ROTATION_SPEED;
+      rc.rotation += clockwise ? -INNER_ROTATION_SPEED : INNER_ROTATION_SPEED;
     }
   };
   app.ticker.add(tickerFn);
@@ -432,20 +433,25 @@ export async function createMarbleGameScreen(app) {
     //   radius: 11,
     // };
 
+    const SUB_STEPS = 6;
+
+    // Marble starts at rest — gravity pulls it down naturally.
+    // A tiny random horizontal nudge stops it falling dead-centre into a corner.
+    const nudge = (Math.random() < 0.5 ? 1 : -1) * (0.3 + Math.random() * 0.3);
+
     const marblePhysics = {
       x: 0,
       y: 0,
-      vx: (Math.random() < 0.5 ? 1 : -1) * (1.5 + Math.random() * 2),
+      vx: nudge,
       vy: 0,
       radius: 11,
     };
 
-    const GRAVITY = 0.65;
-    const BOUNCE = 1;
-    const AIR_DRAG = 1;
+    const GRAVITY = 0.18; // pulls marble downward each sub-step
+    const BOUNCE = 1;     // perfectly elastic — wall reverses velocity at exact same speed
+    const AIR_DRAG = 1;   // no drag — energy is fully preserved between bounces
 
     let done = false;
-    const SUB_STEPS = 6;
     // Safety: force-exit after 18 s in case gaps never align
     // const safetyTimer = setTimeout(() => {
     //   if (done || destroyed) return;
@@ -458,21 +464,54 @@ export async function createMarbleGameScreen(app) {
     //   finishMarble();
     // }, 18000);
 
-    function finishMarble() {
-      //clearTimeout(safetyTimer);
-      console.log("drop finished");
-      //isDropping = false; // allow next drop immediately
-      let pulse = 0;
-      const pulseFn = () => {
-        pulse += 0.1;
-        marble.scale.set(1 + Math.sin(pulse) * 0.15);
-        if (pulse > Math.PI * 3) {
-          app.ticker.remove(pulseFn);
-          board?.removeChild(marble);
-          marble.destroy();
+    function finishMarble(sideIndex) {
+      const badge = outerBadges[sideIndex];
+      let t = 0;
+
+      const flyFn = () => {
+        t += 0.07;
+        if (t > 1) t = 1;
+
+        // Recompute badge center every frame — outerRing keeps rotating during flight
+        const rot = outerRing.rotation;
+        const targetX = badge.x * Math.cos(rot) - badge.y * Math.sin(rot);
+        const targetY = badge.x * Math.sin(rot) + badge.y * Math.cos(rot);
+
+        // Exponential approach: marble chases the badge, naturally decelerates
+        marble.x += (targetX - marble.x) * 0.18;
+        marble.y += (targetY - marble.y) * 0.18;
+
+        // Shrink to ~10% — stays visible inside badge circle
+        marble.scale.set(Math.max(0.1, 1 - t * 0.9));
+
+        if (t >= 1) {
+          app.ticker.remove(flyFn);
+
+          // Snap to exact badge center
+          marble.x = targetX;
+          marble.y = targetY;
+
+          // Ripple fires while marble sits inside the badge
+          highlightBadge(sideIndex);
+
+          // Show win feed pill in the React UI
+          const { betAmount, setLastWin } = useMarbleStore.getState();
+          const multiplier = badge.currentMultiplier;
+          setLastWin({
+            id: `${Date.now()}`,
+            multiplier,
+            winAmount: parseFloat((multiplier * betAmount).toFixed(2)),
+          });
+
+          // Remove marble after ripple finishes (~1.2 s)
+          setTimeout(() => {
+            if (destroyed) return;
+            if (board?.children.includes(marble)) board.removeChild(marble);
+            marble.destroy();
+          }, 1200);
         }
       };
-      app.ticker.add(pulseFn);
+      app.ticker.add(flyFn);
     }
 
     // ── Physics ticker ───────────────────────────────────────────────────
@@ -608,11 +647,8 @@ export async function createMarbleGameScreen(app) {
         marblePhysics.x += marblePhysics.vx * subDt;
         marblePhysics.y += marblePhysics.vy * subDt;
 
-        // Inner ring walls — bounce uses relative velocity to handle rotating walls
+        // Inner ring walls — reflect velocity off wall normal (Nature of Code style)
         for (const ring of innerRings) {
-          const omega = ring.clockwise
-            ? INNER_ROTATION_SPEED
-            : -INNER_ROTATION_SPEED;
           const segments = getRingSegments(ring);
 
           for (const seg of segments) {
@@ -638,19 +674,11 @@ export async function createMarbleGameScreen(app) {
             marblePhysics.x += nx * (marblePhysics.radius - dist);
             marblePhysics.y += ny * (marblePhysics.radius - dist);
 
-            // Tangential velocity of the wall at the contact point
-            const wallVx = -omega * closest.y;
-            const wallVy = omega * closest.x;
-
-            // Relative velocity of marble w.r.t. the moving wall
-            const relDot =
-              (marblePhysics.vx - wallVx) * nx +
-              (marblePhysics.vy - wallVy) * ny;
-
-            // Only impulse if approaching (covers both "marble hits wall" and "wall hits marble")
-            if (relDot < 0) {
-              marblePhysics.vx -= (1 + BOUNCE) * relDot * nx;
-              marblePhysics.vy -= (1 + BOUNCE) * relDot * ny;
+            // Reflect velocity off wall normal: v = v - 2(v·n)n
+            const dot = marblePhysics.vx * nx + marblePhysics.vy * ny;
+            if (dot < 0) {
+              marblePhysics.vx -= 2 * dot * nx;
+              marblePhysics.vy -= 2 * dot * ny;
             }
           }
         }
@@ -677,8 +705,7 @@ export async function createMarbleGameScreen(app) {
           done = true;
           marble.x = marblePhysics.x;
           marble.y = marblePhysics.y;
-          highlightBadge(seg.sideIndex);
-          finishMarble();
+          finishMarble(seg.sideIndex);
           app.ticker.remove(tickFn);
           return;
         }

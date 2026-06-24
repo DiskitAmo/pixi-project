@@ -1,12 +1,22 @@
 import { create } from "zustand";
 import { GAME_SETTINGS } from "../lib/constants";
 
+interface WinEntry {
+  id: string;
+  multiplier: number;
+  winAmount: number;
+}
+
 interface MarbleState {
   betAmount: number;
   incrementBet: () => void;
   decrementBet: () => void;
   setMaxBet: () => void;
   setBetAmount: (amount: number) => void;
+  lastWin: WinEntry | null;
+  setLastWin: (entry: WinEntry) => void;
+  riskIndex: number;
+  setRiskIndex: (index: number) => void;
 }
 
 export const useMarbleStore = create<MarbleState>((set) => ({
@@ -37,4 +47,10 @@ export const useMarbleStore = create<MarbleState>((set) => ({
         GAME_SETTINGS.MAX_BET,
       ),
     }),
+
+  lastWin: null,
+  setLastWin: (entry) => set({ lastWin: entry }),
+
+  riskIndex: 0,
+  setRiskIndex: (index) => set({ riskIndex: index }),
 }));
