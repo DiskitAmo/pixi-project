@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite, Text, Assets, TextStyle } from "pixi.js";
-import { ASSETS, DROP_ITEM_SOURCES } from "../lib/constants";
+import { ASSETS, DROP_ITEM_SOURCES, SOUNDS } from "../lib/constants";
 import { useMarbleStore } from "../store/useMarbleStore";
 
 const OUTER_SIDES = 7;
@@ -452,6 +452,10 @@ export async function createMarbleGameScreen(app) {
     const AIR_DRAG = 1;   // no drag — energy is fully preserved between bounces
 
     let done = false;
+
+    const wallHitAudio = new Audio(SOUNDS.WALL_HIT_SFX);
+    wallHitAudio.volume = 0.25;
+    let lastWallHitTime = 0;
     // Safety: force-exit after 18 s in case gaps never align
     // const safetyTimer = setTimeout(() => {
     //   if (done || destroyed) return;
@@ -679,6 +683,12 @@ export async function createMarbleGameScreen(app) {
             if (dot < 0) {
               marblePhysics.vx -= 2 * dot * nx;
               marblePhysics.vy -= 2 * dot * ny;
+              const now = performance.now();
+              if (now - lastWallHitTime > 80) {
+                lastWallHitTime = now;
+                wallHitAudio.currentTime = 0;
+                wallHitAudio.play().catch(() => {});
+              }
             }
           }
         }

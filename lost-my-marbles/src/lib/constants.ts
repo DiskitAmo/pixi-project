@@ -41,17 +41,30 @@ export const ASSETS = {
   CHARACTER_VARIANT_3: "/assets/character/variant-3.webp",
   CHARACTER_VARIANT_4: "/assets/character/variant-4.webp",
 
-  // ── Bonus ───────────────────────────────────────────────────────────────────
-  BONUS_PILL_TIME: "/assets/bonus/candy.mp4",
-  BONUS_MAKE_IT_RAIN: "/assets/bonus/Granny.mp4",
-  BONUS_FLASHBACK: "/assets/bonus/ww2.mp4",
+  // ── Bonus video ───────────────────────────────────────────────────────────────────
+  BONUS_PILL_TIME: "/assets/bonus/pill-time.mp4",
+  BONUS_MAKE_IT_RAIN: "/assets/bonus/make-it-rain.mp4",
+  BONUS_FLASHBACK: "/assets/bonus/operation-flashback.mp4",
   BONUS_NANSCARE: "/assets/bonus/nanscare.mp4",
+
+  // ── Bonus audio
+  BONUS_PILL_TIME_AUDIO: "/sounds/SFX/pill-time-intro.wav",
+  BONUS_MAKE_IT_RAIN_AUDIO: "/sounds/SFX/make-it-rain-intro.wav",
+  BONUS_FLASHBACK_AUDIO: "/sounds/SFX/operation-flashback-intro.wav",
+  BONUS_NANSCARE_AUDIO: "/sounds/SFX/nanscar-intro.wav",
+
+  // ── Bonus music
+  BONUS_PILL_TIME_MUSIC: "/sounds/Music/Pilltime.mp3",
+  BONUS_MAKE_IT_RAIN_MUSIC: "/sounds/Music/Make-it-rain.mp3",
+  BONUS_FLASHBACK_MUSIC: "/sounds/Music/Operation-flashback.mp3",
+  BONUS_NANSCARE_MUSIC: "/sounds/Music/Nanscar.mp3",
 } as const;
 
 export const SOUNDS = {
   BACKGROUND_MUSIC: "/sounds/background-music.mp3",
   WIN_SOUND: "/sounds/win-sound.mp3",
   INTRO_SFX: "/sounds/SFX/lost-my-marbles-intro.wav",
+  WALL_HIT_SFX: "/sounds/click.mp3",
 } as const;
 
 export const PRELOAD_ASSETS: string[] = [
