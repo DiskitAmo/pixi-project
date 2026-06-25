@@ -13,7 +13,8 @@ export const riskColors: Record<string, string> = {
 export default function RiskSelector() {
   const riskIndex = useMarbleStore((s) => s.riskIndex);
   const setRiskIndex = useMarbleStore((s) => s.setRiskIndex);
-  const disabled = false;
+  const activeBonus = useMarbleStore((s) => s.activeBonus);
+  const disabled = !!activeBonus;
 
   const changeRisk = (dir: number) => {
     new Audio("/sounds/SFX/change-risk.wav").play().catch(() => {});

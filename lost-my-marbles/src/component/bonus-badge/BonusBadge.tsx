@@ -1,44 +1,44 @@
-// import { useFlushStore } from "../../../store/useRoyalFlushStore";
+import { useMarbleStore } from "../../store/useMarbleStore";
+import type { BonusType } from "../../store/useMarbleStore";
+import { ASSETS } from "../../lib/constants";
 import styles from "./BonusBadge.module.css";
-//import { ASSETS } from "../../lib/constants";
+
+const BONUS_BADGES: Record<BonusType, string> = {
+  flashback: ASSETS.BONUS_FLASHBACK_BADGE,
+  "pill-time": ASSETS.BONUS_PILL_TIME_BADGE,
+  "make-it-rain": ASSETS.BONUS_MAKE_IT_RAIN_BADGE,
+  nanscare: ASSETS.BONUS_NANSCARE_BADGE,
+};
+
+const BONUS_COLORS: Record<BonusType, string> = {
+  flashback: "#FF8800",
+  "pill-time": "#E128FF",
+  "make-it-rain": "#48C8FF",
+  nanscare: "#FFED28",
+};
 
 export default function BonusBadge() {
-  // const announcingBonus = useFlushStore((s) => s.announcingBonus);
-  // const announcingBonusType = useFlushStore((s) => s.announcingBonusType);
-  // const rounds = useFlushStore((s) => s.rounds);
+  const activeBonus = useMarbleStore((s) => s.activeBonus);
 
-  // Find any round that belongs to a bonus (covers spinning / bonus / completed phases)
-  // const activeBonusRound = Object.values(rounds).find(
-  //   (r) => r.bonusType !== "none",
-  // );
+  const visible = !!activeBonus;
+  const imgSrc = activeBonus ? BONUS_BADGES[activeBonus] : null;
+  const color = activeBonus ? BONUS_COLORS[activeBonus] : "#ffffff";
 
-  // Derive the type to display — announcement phase takes priority,
-  // then fall back to whatever the active bonus round says
-  //const activeType = announcingBonusType ?? activeBonusRound?.bonusType ?? null;
-
-  // Visible during the announcement AND for the full bonus round lifetime
-  // const visible =
-  //   (announcingBonus && !!announcingBonusType) || !!activeBonusRound;
-
-  // const imgSrc = activeType ? ANNOUNCEMENT_IMAGES[activeType] : null;
-
-  // The wrapper is always in the DOM so React never causes a layout jump.
-  // translateX(-50%) is always part of the inline transform so it is
-  // never dropped by a CSS animation mid-frame (which was causing the jerk).
   return (
     <div
       className={styles.wrapper}
       style={{
-        opacity: 0,
-        transform: `translateX(-50%) scale(${0.4})`,
-      }}
+        opacity: visible ? 1 : 0,
+        transform: `translateX(-50%) scale(${visible ? 1 : 0.4})`,
+        "--badge-color": color,
+      } as React.CSSProperties}
     >
-      {/* {imgSrc && (
+      {imgSrc && (
         <>
           <div className={styles.ring} />
-          <img src={imgSrc} alt={activeType ?? ""} className={styles.image} />
+          <img src={imgSrc} alt={activeBonus ?? ""} className={styles.image} />
         </>
-      )} */}
+      )}
     </div>
   );
 }

@@ -189,7 +189,16 @@ export async function createMarbleGameScreen(app) {
   build();
 
   app.renderer.on("resize", () => {
-    if (!destroyed) build();
+    if (!destroyed) {
+      build();
+      if (bonusVideoSprite) {
+        // build() calls root.removeChildren() — re-add video at correct slot
+        bonusVideoSprite.width = app.screen.width;
+        bonusVideoSprite.height = app.screen.height;
+        root.addChildAt(bonusVideoSprite, 2); // between character and board
+        if (bgSprite) bgSprite.visible = false;
+      }
+    }
   });
 
   // ── Ticker: rotate rings ─────────────────────────────────────────────────
@@ -383,13 +392,32 @@ export async function createMarbleGameScreen(app) {
   // of the outermost ring it stops and highlights the badge at that side.
   let isDropping = false;
 
+  // Bonus → specific drop item path (null = random)
+  const BONUS_DROP_PATH = {
+    flashback: "/assets/drop/bomb.png",
+    "make-it-rain": "/assets/drop/money.png",
+    nanscare: "/assets/drop/silversurfer.png",
+    "pill-time": "/assets/drop/capsule.png",
+  };
+
   function dropMarble() {
     // if (isDropping || destroyed || !board) return;
     // isDropping = true;
     if (destroyed || !board) return;
-    console.log("drop started");
+
+    const activeBonus = useMarbleStore.getState().activeBonus;
+    const isBonusMarble = !!activeBonus;
+
+    // Hard limit: max 2 drops per bonus round
+    if (isBonusMarble) {
+      if (bonusDropCount >= 2) return;
+      bonusDropCount++;
+    }
+
+    const bonusPath = activeBonus ? BONUS_DROP_PATH[activeBonus] : null;
 
     const path =
+      bonusPath ??
       DROP_ITEM_SOURCES[Math.floor(Math.random() * DROP_ITEM_SOURCES.length)];
     const texture = Assets.get(path);
     // if (!texture) {
@@ -410,6 +438,40 @@ export async function createMarbleGameScreen(app) {
     marble.x = 0;
     marble.y = 0;
     board.addChild(marble);
+
+    // ── Ripple effect (bonus marbles only) ──────────────────────────────
+    let rippleGfx = null;
+    const ripplePhases = [0, 0.33, 0.66];
+
+    const rippleFn = () => {
+      if (!rippleGfx || done || destroyed) return;
+      ripplePhases[0] = (ripplePhases[0] + 0.018) % 1;
+      ripplePhases[1] = (ripplePhases[1] + 0.018) % 1;
+      ripplePhases[2] = (ripplePhases[2] + 0.018) % 1;
+      rippleGfx.x = marble.x;
+      rippleGfx.y = marble.y;
+      rippleGfx.clear();
+      for (const phase of ripplePhases) {
+        const r = 11 + phase * 28;
+        const alpha = (1 - phase) * 0.75;
+        rippleGfx.circle(0, 0, r);
+        rippleGfx.stroke({ width: 2, color: 0xffffff, alpha });
+      }
+    };
+
+    function cleanupRipple() {
+      if (!rippleGfx) return;
+      app.ticker.remove(rippleFn);
+      if (rippleGfx.parent) rippleGfx.parent.removeChild(rippleGfx);
+      rippleGfx.destroy();
+      rippleGfx = null;
+    }
+
+    if (isBonusMarble) {
+      rippleGfx = new Graphics();
+      board.addChild(rippleGfx);
+      app.ticker.add(rippleFn);
+    }
 
     // ── Physics state ────────────────────────────────────────────────────
     // const SPEED   = maxRadius / 300;
@@ -448,8 +510,8 @@ export async function createMarbleGameScreen(app) {
     };
 
     const GRAVITY = 0.18; // pulls marble downward each sub-step
-    const BOUNCE = 1;     // perfectly elastic — wall reverses velocity at exact same speed
-    const AIR_DRAG = 1;   // no drag — energy is fully preserved between bounces
+    const BOUNCE = 1; // perfectly elastic — wall reverses velocity at exact same speed
+    const AIR_DRAG = 1; // no drag — energy is fully preserved between bounces
 
     let done = false;
 
@@ -508,10 +570,12 @@ export async function createMarbleGameScreen(app) {
           });
 
           // Remove marble after ripple finishes (~1.2 s)
+          cleanupRipple();
           setTimeout(() => {
             if (destroyed) return;
             if (board?.children.includes(marble)) board.removeChild(marble);
             marble.destroy();
+            if (isBonusMarble) window.__clearBonus?.();
           }, 1200);
         }
       };
@@ -820,9 +884,159 @@ export async function createMarbleGameScreen(app) {
     app.ticker.add(tickFn);
   }
 
-  window.__dropMarble = dropMarble;
+  // ── Random bonus trigger on bet click ───────────────────────────────────
+  const BONUS_TYPES = ["flashback", "pill-time", "make-it-rain", "nanscare"];
+
+  let betCount = 0;
+  const pickNextBonusAt = () => 3 + Math.floor(Math.random() * 3); // 3, 4, or 5
+  let nextBonusAt = pickNextBonusAt();
+
+  // Track bonus drops — max 2 per bonus round
+  let bonusDropCount = 0;
+  let bonusAutoDropTimer = null;
+
+  window.__dropMarble = () => {
+    // Block external drops while a bonus is running
+    if (useMarbleStore.getState().activeBonus) return;
+
+    betCount++;
+    if (betCount >= nextBonusAt) {
+      betCount = 0;
+      nextBonusAt = pickNextBonusAt();
+      const bonusType =
+        BONUS_TYPES[Math.floor(Math.random() * BONUS_TYPES.length)];
+      window.__triggerBonus?.(bonusType);
+    }
+
+    dropMarble();
+  };
+
+  // ── Bonus video — Pixi sprite at root[2]: behind rings, in front of character
+  let bonusVideoSprite = null;
+  let bonusVideoEl = null;
+  let bonusCancelled = false;
+
+  const BONUS_VIDEO_MAP = {
+    flashback: ASSETS.BONUS_FLASHBACK,
+    "pill-time": ASSETS.BONUS_PILL_TIME,
+    "make-it-rain": ASSETS.BONUS_MAKE_IT_RAIN,
+    nanscare: ASSETS.BONUS_NANSCARE,
+  };
+
+  window.__triggerBonus = async (bonusType) => {
+    if (destroyed) return;
+    bonusCancelled = false;
+    bonusDropCount = 0;
+
+    // Tell React immediately — badge + SFX start right away
+    useMarbleStore.getState().triggerBonus(bonusType);
+
+    // Auto-drop 2nd bonus marble after the intro badge clears (~3 s)
+    if (bonusAutoDropTimer) clearTimeout(bonusAutoDropTimer);
+    bonusAutoDropTimer = setTimeout(() => {
+      bonusAutoDropTimer = null;
+      if (!destroyed && useMarbleStore.getState().activeBonus) dropMarble();
+    }, 3000);
+
+    const videoSrc = BONUS_VIDEO_MAP[bonusType];
+    if (!videoSrc) return;
+
+    if (bgSprite) bgSprite.visible = false;
+
+    // Create a native video element so we control muted/loop/play directly
+    const vid = document.createElement("video");
+    vid.src = videoSrc;
+    vid.muted = true;
+    vid.loop = true;
+    vid.playsInline = true;
+    vid.crossOrigin = "anonymous";
+    // Must be in the DOM for Safari + iOS autoplay
+    vid.style.cssText = "position:absolute;width:0;height:0;visibility:hidden;";
+    document.body.appendChild(vid);
+    bonusVideoEl = vid;
+
+    // Wait until the video has enough data to render a frame
+    await new Promise((resolve) => {
+      vid.addEventListener("canplay", resolve, { once: true });
+      vid.load();
+    });
+
+    if (destroyed || bonusCancelled) {
+      vid.remove();
+      bonusVideoEl = null;
+      return;
+    }
+
+    vid.play().catch(() => {});
+
+    // Pixi 8 — create texture from the live video element
+    let texture;
+    try {
+      texture = await Assets.load(videoSrc);
+      // Ensure the underlying video is our muted/looping element
+      const src = texture.source?.resource;
+      if (src instanceof HTMLVideoElement) {
+        src.muted = true;
+        src.loop = true;
+        src.play().catch(() => {});
+      }
+    } catch (_) {
+      // Fallback: build texture from the DOM video element directly
+      try {
+        const { Texture } = await import("pixi.js");
+        texture = Texture.from(vid);
+      } catch (__) {
+        if (bgSprite) bgSprite.visible = true;
+        vid.remove();
+        bonusVideoEl = null;
+        return;
+      }
+    }
+
+    if (destroyed || bonusCancelled) {
+      vid.remove();
+      bonusVideoEl = null;
+      return;
+    }
+
+    bonusVideoSprite = new Sprite(texture);
+    bonusVideoSprite.width = app.screen.width;
+    bonusVideoSprite.height = app.screen.height;
+    // root[0]=bgSprite(hidden), root[1]=character, root[2]=video, root[3]=board(rings)
+    root.addChildAt(bonusVideoSprite, 2);
+  };
+
+  const clearBonusVideo = () => {
+    bonusCancelled = true;
+    bonusDropCount = 0;
+    if (bonusAutoDropTimer) {
+      clearTimeout(bonusAutoDropTimer);
+      bonusAutoDropTimer = null;
+    }
+    if (bonusVideoEl) {
+      bonusVideoEl.pause();
+      bonusVideoEl.remove();
+      bonusVideoEl = null;
+    }
+    if (bonusVideoSprite) {
+      if (bonusVideoSprite.parent)
+        bonusVideoSprite.parent.removeChild(bonusVideoSprite);
+      bonusVideoSprite.destroy();
+      bonusVideoSprite = null;
+    }
+    if (bgSprite) bgSprite.visible = true;
+  };
+
+  window.__clearBonus = () => {
+    clearBonusVideo();
+    useMarbleStore.getState().clearBonus();
+  };
+
   root.on("destroyed", () => {
     window.__dropMarble = null;
+    window.__triggerBonus = null;
+    window.__clearBonus = null;
+    clearBonusVideo();
   });
 
   return root;

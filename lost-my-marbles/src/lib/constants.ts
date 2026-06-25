@@ -41,11 +41,17 @@ export const ASSETS = {
   CHARACTER_VARIANT_3: "/assets/character/variant-3.webp",
   CHARACTER_VARIANT_4: "/assets/character/variant-4.webp",
 
+  // ── Bonus badges
+  BONUS_FLASHBACK_BADGE: "/assets/bonus/badge/operation.png",
+  BONUS_PILL_TIME_BADGE: "/assets/bonus/badge/pillTime.png",
+  BONUS_MAKE_IT_RAIN_BADGE: "/assets/bonus/badge/make-it-rain.png",
+  BONUS_NANSCARE_BADGE: "/assets/bonus/badge/nanscar.png",
+
   // ── Bonus video ───────────────────────────────────────────────────────────────────
-  BONUS_PILL_TIME: "/assets/bonus/pill-time.mp4",
-  BONUS_MAKE_IT_RAIN: "/assets/bonus/make-it-rain.mp4",
-  BONUS_FLASHBACK: "/assets/bonus/operation-flashback.mp4",
-  BONUS_NANSCARE: "/assets/bonus/nanscare.mp4",
+  BONUS_PILL_TIME: "/assets/bonus/video/pill-time.mp4",
+  BONUS_MAKE_IT_RAIN: "/assets/bonus/video/make-it-rain.mp4",
+  BONUS_FLASHBACK: "/assets/bonus/video/operation-flashback.mp4",
+  BONUS_NANSCARE: "/assets/bonus/video/nanscare.mp4",
 
   // ── Bonus audio
   BONUS_PILL_TIME_AUDIO: "/sounds/SFX/pill-time-intro.wav",
@@ -88,11 +94,29 @@ export const PRELOAD_ASSETS: string[] = [
   ASSETS.CHARACTER_VARIANT_3,
   ASSETS.CHARACTER_VARIANT_4,
 
+  //Sound
+  SOUNDS.BACKGROUND_MUSIC,
+  SOUNDS.WIN_SOUND,
+  SOUNDS.INTRO_SFX,
+  SOUNDS.WALL_HIT_SFX,
+
   //Bonus assets
+  ASSETS.BONUS_FLASHBACK_BADGE,
+  ASSETS.BONUS_PILL_TIME_BADGE,
+  ASSETS.BONUS_MAKE_IT_RAIN_BADGE,
+  ASSETS.BONUS_NANSCARE_BADGE,
   ASSETS.BONUS_PILL_TIME,
   ASSETS.BONUS_MAKE_IT_RAIN,
   ASSETS.BONUS_FLASHBACK,
   ASSETS.BONUS_NANSCARE,
+  ASSETS.BONUS_PILL_TIME_AUDIO,
+  ASSETS.BONUS_MAKE_IT_RAIN_AUDIO,
+  ASSETS.BONUS_FLASHBACK_AUDIO,
+  ASSETS.BONUS_NANSCARE_AUDIO,
+  ASSETS.BONUS_PILL_TIME_MUSIC,
+  ASSETS.BONUS_MAKE_IT_RAIN_MUSIC,
+  ASSETS.BONUS_FLASHBACK_MUSIC,
+  ASSETS.BONUS_NANSCARE_MUSIC,
 ];
 
 // Game settings

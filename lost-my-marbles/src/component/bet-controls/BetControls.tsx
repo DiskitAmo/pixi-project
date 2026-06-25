@@ -4,6 +4,7 @@ import SVGIcon from "../svg-icon/SVGIcon";
 import styles from "./BetControls.module.css";
 import { useMarbleStore } from "../../store/useMarbleStore";
 import AutoplayModal from "../autoplay-modal";
+import BonusBadge from "../bonus-badge/BonusBadge";
 
 interface BetControlsProps {
   onBetClick: (betAmount: number) => void;
@@ -15,10 +16,11 @@ interface BetControlsProps {
 export default function BetControls({ mobileInline }: BetControlsProps) {
   const [showAutoplayModal, setShowAutoplayModal] = useState(false);
   const hideTimeoutRef = useRef<number | null>(null);
-  const disabled = false;
   const isAuto = false;
 
   const { incrementBet, decrementBet, setMaxBet } = useMarbleStore();
+  const activeBonus = useMarbleStore((s) => s.activeBonus);
+  const disabled = !!activeBonus;
 
   useEffect(() => {
     return () => {
@@ -35,8 +37,9 @@ export default function BetControls({ mobileInline }: BetControlsProps) {
         <SVGIcon name="minsIcon" />
       </button>
 
-      {/* Centre: bet button + autoplay */}
+      {/* Centre: bet button + autoplay + bonus badge */}
       <div className={styles.betContainer}>
+        <BonusBadge />
         {!mobileInline && (
           <div className={styles.mainButtonOuter}>
             <div

@@ -7,6 +7,8 @@ interface WinEntry {
   winAmount: number;
 }
 
+export type BonusType = "flashback" | "pill-time" | "make-it-rain" | "nanscare";
+
 interface MarbleState {
   betAmount: number;
   incrementBet: () => void;
@@ -17,6 +19,11 @@ interface MarbleState {
   setLastWin: (entry: WinEntry) => void;
   riskIndex: number;
   setRiskIndex: (index: number) => void;
+  activeBonus: BonusType | null;
+  bonusPhase: "intro" | "active" | null;
+  triggerBonus: (type: BonusType) => void;
+  endBonusIntro: () => void;
+  clearBonus: () => void;
 }
 
 export const useMarbleStore = create<MarbleState>((set) => ({
@@ -53,4 +60,10 @@ export const useMarbleStore = create<MarbleState>((set) => ({
 
   riskIndex: 0,
   setRiskIndex: (index) => set({ riskIndex: index }),
+
+  activeBonus: null,
+  bonusPhase: null,
+  triggerBonus: (type) => set({ activeBonus: type, bonusPhase: "intro" }),
+  endBonusIntro: () => set({ bonusPhase: "active" }),
+  clearBonus: () => set({ activeBonus: null, bonusPhase: null }),
 }));

@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import LoaderScreen from "./loadingScreen/LoaderScreen";
 import UIOverlay from "./gameControls/gameControl";
+import BonusIntro from "./bonus-intro/BonusIntro";
 import { useGameScale } from "../hooks/useGameScale";
 
 interface GameWrapperProps {
@@ -33,11 +34,14 @@ export default function GameWrapper({ onStart, onRegisterGameStart }: GameWrappe
 
   if (gamePhase === "game") {
     return (
-      <UIOverlay
-        onBetClick={() => {}}
-        onAutoplayClick={() => {}}
-        onToggleMute={() => (window as any).__toggleMusic?.()}
-      />
+      <>
+        <UIOverlay
+          onBetClick={() => {}}
+          onAutoplayClick={() => {}}
+          onToggleMute={() => (window as any).__toggleMusic?.()}
+        />
+        <BonusIntro />
+      </>
     );
   }
 
