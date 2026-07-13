@@ -10,9 +10,10 @@
 }
 
 .badge {
-  width: 600px;
-  height: 600px;
-  animation: popIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 280px;
+  height: 280px;
+  /* animation: popIn 0.8s cubic-bezier(0.22, 1, 0.36, 1); */
+  transform: scale(1.5);
 }
 
 .image {
@@ -37,7 +38,7 @@
     opacity: 0;
   }
   to {
-    transform: scale(1);
+    transform: scale(1.5);
     opacity: 1;
   }
 }

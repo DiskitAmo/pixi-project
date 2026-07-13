@@ -559,9 +559,12 @@ export async function createMarbleGameScreen(app) {
         if (t >= 1) {
           app.ticker.remove(flyFn);
 
-          // Snap to exact badge center
-          marble.x = targetX;
-          marble.y = targetY;
+          // Reparent marble into outerRing so it rotates with the badge
+          board.removeChild(marble);
+          outerRing.addChild(marble);
+          marble.x = badge.x;
+          marble.y = badge.y;
+          marble.scale.set(0.3);
 
           // Ripple fires while marble sits inside the badge
           highlightBadge(sideIndex);
@@ -579,7 +582,7 @@ export async function createMarbleGameScreen(app) {
           cleanupRipple();
           setTimeout(() => {
             if (destroyed) return;
-            if (board?.children.includes(marble)) board.removeChild(marble);
+            if (marble.parent) marble.parent.removeChild(marble);
             marble.destroy();
             if (isBonusMarble) {
               bonusDropsCompleted++;
