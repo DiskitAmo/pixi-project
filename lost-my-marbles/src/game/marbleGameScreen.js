@@ -531,6 +531,12 @@ export async function createMarbleGameScreen(app) {
     // }, 18000);
 
     function finishMarble(sideIndex) {
+      if (isBonusMarble) {
+        const winAudio = new Audio(SOUNDS.WIN_SOUND);
+        winAudio.volume = 0.6;
+        winAudio.play().catch(() => {});
+      }
+
       const badge = outerBadges[sideIndex];
       let t = 0;
 
@@ -575,7 +581,10 @@ export async function createMarbleGameScreen(app) {
             if (destroyed) return;
             if (board?.children.includes(marble)) board.removeChild(marble);
             marble.destroy();
-            if (isBonusMarble) window.__clearBonus?.();
+            if (isBonusMarble) {
+              bonusDropsCompleted++;
+              if (bonusDropsCompleted >= bonusDropCount) window.__clearBonus?.();
+            }
           }, 1200);
         }
       };
@@ -893,6 +902,7 @@ export async function createMarbleGameScreen(app) {
 
   // Track bonus drops — max 2 per bonus round
   let bonusDropCount = 0;
+  let bonusDropsCompleted = 0;
   let bonusAutoDropTimer = null;
 
   window.__dropMarble = () => {
@@ -927,6 +937,7 @@ export async function createMarbleGameScreen(app) {
     if (destroyed) return;
     bonusCancelled = false;
     bonusDropCount = 0;
+    bonusDropsCompleted = 0;
 
     // Tell React immediately — badge + SFX start right away
     useMarbleStore.getState().triggerBonus(bonusType);
@@ -1009,6 +1020,7 @@ export async function createMarbleGameScreen(app) {
   const clearBonusVideo = () => {
     bonusCancelled = true;
     bonusDropCount = 0;
+    bonusDropsCompleted = 0;
     if (bonusAutoDropTimer) {
       clearTimeout(bonusAutoDropTimer);
       bonusAutoDropTimer = null;

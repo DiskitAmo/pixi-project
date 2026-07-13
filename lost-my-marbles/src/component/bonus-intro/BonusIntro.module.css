@@ -10,8 +10,8 @@
 }
 
 .badge {
-  width: 280px;
-  height: 280px;
+  width: 600px;
+  height: 600px;
   animation: popIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -23,11 +23,21 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes popIn {
-  from { transform: scale(0.6); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
